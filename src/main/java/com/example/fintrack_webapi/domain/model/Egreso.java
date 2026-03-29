@@ -1,5 +1,17 @@
 package com.example.fintrack_webapi.domain.model;
 
-public class Egreso extends Transaccion {
+import java.util.Date;
+import lombok.Getter;
 
+
+@Getter
+public class Egreso extends Transaccion {
+    private Categoria categoria;
+    private String descripcion;
+
+    public Egreso(double monto, Date fecha, Categoria categoria, String descripcion) {
+        super(monto, fecha);
+        this.categoria = categoria;
+        this.descripcion = descripcion;
+    }
 }

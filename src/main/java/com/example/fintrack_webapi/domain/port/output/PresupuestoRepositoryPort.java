@@ -1,5 +1,7 @@
 package com.example.fintrack_webapi.domain.port.output;
 
-public interface PresupuestoRepositoryPort {
+import com.example.fintrack_webapi.domain.model.PresupuestoMensual;
 
+public interface PresupuestoRepositoryPort {
+    PresupuestoMensual guardar(PresupuestoMensual presupuesto);
 }

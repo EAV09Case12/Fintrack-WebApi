@@ -11,4 +11,8 @@ public interface TransaccionRepositoryPort {
     Egreso guardarEgreso(Egreso egreso);
 
     List<Transaccion> obtenerHistorial();
+
+    List<Transaccion> obtenerUltimosMovimientos(int cantidad);
+
+    List<Transaccion> obtenerPorCategoria(int codigoCategoria);
 }

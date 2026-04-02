@@ -1,9 +1,11 @@
 package com.example.fintrack_webapi.infrastructure.persistence.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
-import jakarta.persistence.Column;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
@@ -13,35 +15,29 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
+
 @Entity
-@Table(name = "presupuesto")
+@Table(name = "egreso")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PresupuestoEntity {
+public class EgresoEntity {
 
     @Id
-    @Column(name = "idPre")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column
+    private double monto;
 
     @Column
     @Temporal(TemporalType.DATE)
     private Date fecha;
 
-    @Column
-    private double montoTotal;
+    @Column(nullable = false)
+    private int categoria;
 
     @Column
-    private Double serviciosCat;
-    @Column
-    private Double entretenimientoCat;
-    @Column
-    private Double transporteCat;
-    @Column
-    private Double alimentacionCat;
-    @Column
-    private Double saludCat;
-    @Column
-    private Double deudasCat;
+    private String descripcion;
 }

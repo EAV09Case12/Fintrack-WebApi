@@ -13,35 +13,29 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
+
 @Entity
-@Table(name = "presupuesto")
+@Table(name = "movimiento")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PresupuestoEntity {
+public class MovimientoEntity {
 
     @Id
-    @Column(name = "idPre")
+    @Column(name = "idMov")
     private Long id;
+
+    @Column
+    private double monto;
 
     @Column
     @Temporal(TemporalType.DATE)
     private Date fecha;
 
-    @Column
-    private double montoTotal;
+    @Column(nullable = false)
+    private int categoria; // FK (guardas el código del enum)
 
     @Column
-    private Double serviciosCat;
-    @Column
-    private Double entretenimientoCat;
-    @Column
-    private Double transporteCat;
-    @Column
-    private Double alimentacionCat;
-    @Column
-    private Double saludCat;
-    @Column
-    private Double deudasCat;
+    private String descripcion;
 }

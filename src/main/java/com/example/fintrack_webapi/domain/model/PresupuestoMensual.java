@@ -41,7 +41,7 @@ public class PresupuestoMensual {
                 .mapToDouble(Double::doubleValue)
                 .sum();
 
-        if (Math.abs(suma - 100.0) > 0.0001) {
+        if (Math.abs(suma - 100.0) > 0.01) {
             throw new IllegalArgumentException("La suma debe ser 100%");
         }
     }

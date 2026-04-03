@@ -6,6 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Column;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -22,14 +24,15 @@ import java.util.Date;
 public class PresupuestoEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idPre")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     @Temporal(TemporalType.DATE)
     private Date fecha;
 
-    @Column
+    @Column(nullable = false)
     private double montoTotal;
 
     @Column

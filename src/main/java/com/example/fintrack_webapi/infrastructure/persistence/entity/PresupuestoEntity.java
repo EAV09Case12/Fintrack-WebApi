@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.util.Date;
+
 @Entity
 @Table(name = "presupuesto")
 @Getter
@@ -25,26 +26,31 @@ public class PresupuestoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idPre")
+    @Column(name = "idpre")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "fecha", nullable = false)
     @Temporal(TemporalType.DATE)
     private Date fecha;
 
-    @Column(nullable = false)
+    @Column(name = "montototal", nullable = false)  // ← sin guión bajo, todo junto
     private double montoTotal;
 
-    @Column
+    @Column(name = "servicioscat")
     private Double serviciosCat;
-    @Column
+    
+    @Column(name = "entretenimientocat")
     private Double entretenimientoCat;
-    @Column
+    
+    @Column(name = "transportecat")
     private Double transporteCat;
-    @Column
+    
+    @Column(name = "alimentacioncat")
     private Double alimentacionCat;
-    @Column
+    
+    @Column(name = "saludcat")
     private Double saludCat;
-    @Column
+    
+    @Column(name = "deudascat")
     private Double deudasCat;
 }

@@ -36,37 +36,24 @@ public class PresupuestoMapper {
     // ENTITY → DOMAIN
     // =========================
 
-    public static PresupuestoMensual toDomain(PresupuestoEntity entity) {
-
-        Ingreso ingreso = new Ingreso(
-                entity.getMontoTotal(),
-                entity.getFecha()
-        );
-
-        PresupuestoMensual domain = new PresupuestoMensual(ingreso);
-
-        Map<Categoria, Double> distribucion = new HashMap<>();
-
+        public static PresupuestoMensual toDomain(PresupuestoEntity entity) {
+        // Crear mapa con los montos guardados
+        Map<Categoria, Double> montos = new HashMap<>();
+        
         if (entity.getServiciosCat() != null)
-            distribucion.put(Categoria.SERVICIOS, entity.getServiciosCat());
-
+            montos.put(Categoria.SERVICIOS, entity.getServiciosCat());
         if (entity.getEntretenimientoCat() != null)
-            distribucion.put(Categoria.ENTRETENIMIENTO, entity.getEntretenimientoCat());
-
+            montos.put(Categoria.ENTRETENIMIENTO, entity.getEntretenimientoCat());
         if (entity.getTransporteCat() != null)
-            distribucion.put(Categoria.TRANSPORTE, entity.getTransporteCat());
-
+            montos.put(Categoria.TRANSPORTE, entity.getTransporteCat());
         if (entity.getAlimentacionCat() != null)
-            distribucion.put(Categoria.ALIMENTACION, entity.getAlimentacionCat());
-
+            montos.put(Categoria.ALIMENTACION, entity.getAlimentacionCat());
         if (entity.getSaludCat() != null)
-            distribucion.put(Categoria.SALUD, entity.getSaludCat());
-
+            montos.put(Categoria.SALUD, entity.getSaludCat());
         if (entity.getDeudasCat() != null)
-            distribucion.put(Categoria.DEUDAS, entity.getDeudasCat());
-
-        domain.distribuir(distribucion);
-
-        return domain;
+            montos.put(Categoria.DEUDAS, entity.getDeudasCat());
+        
+        // Usar un constructor especial para reconstrucción
+        return new PresupuestoMensual(entity.getFecha(), entity.getMontoTotal(), montos);
     }
 }

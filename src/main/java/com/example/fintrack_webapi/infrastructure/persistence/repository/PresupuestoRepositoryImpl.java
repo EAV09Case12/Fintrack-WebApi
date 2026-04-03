@@ -30,13 +30,14 @@ public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort{
         System.out.println("Entity serviciosCat: " + entity.getServiciosCat());
         
         PresupuestoEntity saved = jpaRepository.save(entity);
+        /*PresupuestoEntity saved = jpaRepository.insertPresupuesto(entity);*/
         return PresupuestoMapper.toDomain(saved);
 }
     /*public PresupuestoMensual guardar(PresupuestoMensual presupuesto) {
 
         PresupuestoEntity entity = PresupuestoMapper.toEntity(presupuesto);
 
-        PresupuestoEntity saved = jpaRepository.save(entity);
+        PresupuestoEntity saved = jpaRepository.insertPresupuesto(entity);
 
         return PresupuestoMapper.toDomain(saved);
     }*/

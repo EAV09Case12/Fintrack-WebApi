@@ -40,37 +40,24 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
         // 2. crear entidad de dominio (Ingreso)
         Ingreso ingreso = new Ingreso(dto.monto(), fecha);
 
-        // 3. guardar ingreso (tabla ingreso)
+        // 3. guardar ingreso
         ingreso = transaccionRepo.guardarIngreso(ingreso);
 
-        // 4. crear presupuesto usando el constructor que recibe Ingreso
-        PresupuestoMensual presupuesto = new PresupuestoMensual(ingreso);
-        
-        System.out.println("=== ANTES DE GUARDAR ===");
-        System.out.println("Monto total: " + presupuesto.getMontoTotal());
-        System.out.println("Distribución: " + presupuesto.obtenerDistribucion());
+        // 4. crear presupuesto usando el constructor con Ingreso
+        PresupuestoMensual presupuesto = new PresupuestoMensual(ingreso);  // ← CAMBIO AQUÍ
 
         // 5. convertir porcentajes (Map<Integer,Double> → Map<Categoria,Double>)
         Map<Categoria, Double> porcentajesPorCategoria = convertirCategorias(dto.porcentajes());
 
-        // después de distribuir
-        System.out.println("=== ANTES DE GUARDAR ===");
-        System.out.println("Monto total: " + presupuesto.getMontoTotal());
-        System.out.println("Distribución: " + presupuesto.obtenerDistribucion());
-
-        // 6. aplicar lógica de dominio (distribuye el montoTotal en categorías)
+        // 6. distribuir
         presupuesto.distribuir(porcentajesPorCategoria);
-        
-        // después de distribuir
-        System.out.println("=== ANTES DE GUARDAR ===");
-        System.out.println("Monto total: " + presupuesto.getMontoTotal());
-        System.out.println("Distribución: " + presupuesto.obtenerDistribucion());
-        // 7. guardar presupuesto (tabla presupuesto)
+
+        // 7. guardar presupuesto
         presupuesto = presupuestoRepo.guardar(presupuesto);
 
-        // 8. devolver DTO de respuesta
+        // 8. devolver respuesta
         return toResponse(presupuesto);
-}
+    }
 
     // =========================
     // EGRESO

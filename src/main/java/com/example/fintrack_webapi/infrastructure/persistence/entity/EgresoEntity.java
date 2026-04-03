@@ -26,18 +26,19 @@ public class EgresoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "monto", nullable = false)
     private double monto;
 
-    @Column(nullable = false)
+    @Column(name = "fecha", nullable = false)
     @Temporal(TemporalType.DATE)
     private Date fecha;
 
-    @Column(nullable = false)
+    @Column(name = "categoria", nullable = false)
     private int categoria;
 
-    @Column(nullable = false)
+    @Column(name = "descripcion", nullable = false, length = 150)
     private String descripcion;
 }

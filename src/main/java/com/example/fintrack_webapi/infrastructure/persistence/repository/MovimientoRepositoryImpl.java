@@ -55,7 +55,7 @@ public class MovimientoRepositoryImpl implements TransaccionRepositoryPort {
         var entity = TransaccionMapper.toEntityEgreso(egreso);
 
         var saved = egresoRepository.save(entity);
-
+        /*EgresoEntity saved = egresoJpaRepository.insertEgreso(entity);*/
         return TransaccionMapper.toDomain(saved);
     }
 

@@ -26,14 +26,14 @@ public class MovimientoEntity {
     @Column(name = "idMov")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private double monto;
 
-    @Column
+    @Column(nullable = false)
     @Temporal(TemporalType.DATE)
     private Date fecha;
 
-    @Column(nullable = false)
+    @Column
     private int categoria; // FK (guardas el código del enum)
 
     @Column

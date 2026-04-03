@@ -19,11 +19,25 @@ public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort{
 
     @Override
     public PresupuestoMensual guardar(PresupuestoMensual presupuesto) {
+        System.out.println("=== DEBUG ===");
+        System.out.println("Fecha: " + presupuesto.getFecha());
+        System.out.println("Monto Total: " + presupuesto.getMontoTotal());
+        System.out.println("Distribucion: " + presupuesto.obtenerDistribucion());
+        
+        PresupuestoEntity entity = PresupuestoMapper.toEntity(presupuesto);
+        
+        System.out.println("Entity montoTotal: " + entity.getMontoTotal());
+        System.out.println("Entity serviciosCat: " + entity.getServiciosCat());
+        
+        PresupuestoEntity saved = jpaRepository.save(entity);
+        return PresupuestoMapper.toDomain(saved);
+}
+    /*public PresupuestoMensual guardar(PresupuestoMensual presupuesto) {
 
         PresupuestoEntity entity = PresupuestoMapper.toEntity(presupuesto);
 
         PresupuestoEntity saved = jpaRepository.save(entity);
 
         return PresupuestoMapper.toDomain(saved);
-    }
+    }*/
 }

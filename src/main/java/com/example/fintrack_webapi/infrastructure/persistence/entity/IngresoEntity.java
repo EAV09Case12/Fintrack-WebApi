@@ -26,10 +26,10 @@ public class IngresoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private double monto;
 
-    @Column
+    @Column(nullable = false)
     @Temporal(TemporalType.DATE)
     private Date fecha;
 }

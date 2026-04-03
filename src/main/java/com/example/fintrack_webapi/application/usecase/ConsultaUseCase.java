@@ -5,11 +5,13 @@ import com.example.fintrack_webapi.domain.model.Egreso;
 import com.example.fintrack_webapi.domain.model.Transaccion;
 import com.example.fintrack_webapi.domain.port.input.ConsultaUseCasePort;
 import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
+import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
 public class ConsultaUseCase implements ConsultaUseCasePort {
 
     private final TransaccionRepositoryPort transaccionRepo;

@@ -7,12 +7,15 @@ import com.example.fintrack_webapi.domain.model.*;
 import com.example.fintrack_webapi.domain.port.input.TransaccionUseCasePort;
 import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
 import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
+import org.springframework.stereotype.Service;
+import com.example.fintrack_webapi.application.dto.commands.PresupuestoDTO;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Service
 public class TransaccionUseCase implements TransaccionUseCasePort {
 
     private final TransaccionRepositoryPort transaccionRepo;
@@ -34,29 +37,40 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
         // 1. convertir fecha
         Date fecha = convertirFecha(dto.fecha());
 
-        // 2. crear entidad de dominio (Liskov aplicado)
+        // 2. crear entidad de dominio (Ingreso)
         Ingreso ingreso = new Ingreso(dto.monto(), fecha);
 
         // 3. guardar ingreso (tabla ingreso)
         ingreso = transaccionRepo.guardarIngreso(ingreso);
 
-        // ⚠ movimiento lo crea el trigger en DB
-
-        // 4. convertir porcentajes (DTO → dominio)
-        Map<Categoria, Double> porcentajes = convertirCategorias(dto.porcentajes());
-
-        // 5. crear presupuesto desde ingreso
+        // 4. crear presupuesto usando el constructor que recibe Ingreso
         PresupuestoMensual presupuesto = new PresupuestoMensual(ingreso);
+        
+        System.out.println("=== ANTES DE GUARDAR ===");
+        System.out.println("Monto total: " + presupuesto.getMontoTotal());
+        System.out.println("Distribución: " + presupuesto.obtenerDistribucion());
 
-        // 6. aplicar lógica de dominio
-        presupuesto.distribuir(porcentajes);
+        // 5. convertir porcentajes (Map<Integer,Double> → Map<Categoria,Double>)
+        Map<Categoria, Double> porcentajesPorCategoria = convertirCategorias(dto.porcentajes());
 
+        // después de distribuir
+        System.out.println("=== ANTES DE GUARDAR ===");
+        System.out.println("Monto total: " + presupuesto.getMontoTotal());
+        System.out.println("Distribución: " + presupuesto.obtenerDistribucion());
+
+        // 6. aplicar lógica de dominio (distribuye el montoTotal en categorías)
+        presupuesto.distribuir(porcentajesPorCategoria);
+        
+        // después de distribuir
+        System.out.println("=== ANTES DE GUARDAR ===");
+        System.out.println("Monto total: " + presupuesto.getMontoTotal());
+        System.out.println("Distribución: " + presupuesto.obtenerDistribucion());
         // 7. guardar presupuesto (tabla presupuesto)
         presupuesto = presupuestoRepo.guardar(presupuesto);
 
         // 8. devolver DTO de respuesta
         return toResponse(presupuesto);
-    }
+}
 
     // =========================
     // EGRESO
@@ -92,18 +106,15 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
     }
 
     private Map<Categoria, Double> convertirCategorias(Map<Integer, Double> entrada) {
-
-        Map<Categoria, Double> resultado = new HashMap<>();
-
-        for (Map.Entry<Integer, Double> entry : entrada.entrySet()) {
-
-            Categoria categoria = buscarPorCodigo(entry.getKey());
-
-            resultado.put(categoria, entry.getValue());
-        }
-
-        return resultado;
+    Map<Categoria, Double> resultado = new HashMap<>();
+    
+    for (Map.Entry<Integer, Double> entry : entrada.entrySet()) {
+        Categoria categoria = buscarPorCodigo(entry.getKey());
+        resultado.put(categoria, entry.getValue());
     }
+    
+    return resultado;
+}
 
     private Categoria buscarPorCodigo(int codigo) {
 

@@ -23,7 +23,7 @@ import java.util.Date;
 public class MovimientoEntity {
 
     @Id
-    @Column(name = "idMov")
+    @Column(name = "idMov", insertable = false, updatable = false)
     private Long id;
 
     @Column(nullable = false)
@@ -34,7 +34,7 @@ public class MovimientoEntity {
     private Date fecha;
 
     @Column
-    private int categoria; // FK (guardas el código del enum)
+    private Integer categoria; // FK (guardas el código del enum)
 
     @Column
     private String descripcion;

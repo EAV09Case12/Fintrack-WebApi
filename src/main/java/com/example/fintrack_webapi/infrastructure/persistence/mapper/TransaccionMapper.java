@@ -64,13 +64,14 @@ public class TransaccionMapper {
     // =========================
 
     public static Transaccion toDomain(MovimientoEntity entity) {
+        Integer cat = entity.getCategoria();
 
-        if (entity.getCategoria() != 0) {
+        if (cat != null && cat.intValue() != 0) {
             // es egreso
             return new Egreso(
                     entity.getMonto(),
                     entity.getFecha(),
-                    buscarPorCodigo(entity.getCategoria()),
+                    buscarPorCodigo(cat.intValue()),
                     entity.getDescripcion()
             );
         } else {

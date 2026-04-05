@@ -9,6 +9,7 @@ import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
 import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
 import org.springframework.stereotype.Service;
 import com.example.fintrack_webapi.application.dto.commands.PresupuestoDTO;
+import com.example.fintrack_webapi.domain.exception.BadRequestException;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -88,7 +89,7 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
         try {
             return new SimpleDateFormat("yyyy-MM-dd").parse(fechaStr);
         } catch (Exception e) {
-            throw new RuntimeException("Formato de fecha inválido");
+            throw new BadRequestException("Formato de fecha inválido");
         }
     }
 
@@ -111,7 +112,7 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
             }
         }
 
-        throw new RuntimeException("Categoría inválida");
+        throw new BadRequestException("Categoría inválida");
     }
 
     private PresupuestoResponseDTO toResponse(PresupuestoMensual p) {

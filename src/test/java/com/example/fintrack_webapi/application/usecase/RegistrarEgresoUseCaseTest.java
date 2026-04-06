@@ -1,20 +1,22 @@
 package com.example.fintrack_webapi.application.usecase;
 
-import com.example.fintrack_webapi.application.dto.commands.EgresoDTO;
-import com.example.fintrack_webapi.domain.model.Categoria;
-import com.example.fintrack_webapi.domain.model.Egreso;
-import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
-import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.example.fintrack_webapi.application.dto.commands.EgresoDTO;
+import com.example.fintrack_webapi.domain.model.Categoria;
+import com.example.fintrack_webapi.domain.model.Egreso;
+import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
+import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
 
 @ExtendWith(MockitoExtension.class)
 class RegistrarEgresoUseCaseTest {
@@ -45,6 +47,40 @@ class RegistrarEgresoUseCaseTest {
         assertNotNull(egresoGuardado.getFecha());
 
         // El presupuesto nunca debe tocarse al registrar un egreso
+        verifyNoInteractions(presupuestoRepo);
+    }
+
+    //VALIDACION DE MONTOS
+
+    // Caso de error: monto en cero.
+    // Comportamiento esperado: rechazar monto 0 por regla de negocio.
+    // Comportamiento actual del codigo: se acepta y se persiste el egreso.
+    // Observación: hoy se permite registrar un gasto sin valor, lo que puede afectar métricas del historial.
+    @Test
+    void egresoMontoCero() {
+        EgresoDTO dto = new EgresoDTO(0.0, "2026-03-10", 4, "Compra en cero");
+
+        transaccionUseCase.registrarEgreso(dto);
+
+        ArgumentCaptor<Egreso> captor = ArgumentCaptor.forClass(Egreso.class);
+        verify(transaccionRepo).guardarEgreso(captor.capture());
+        assertEquals(0.0, captor.getValue().getMonto());
+        verifyNoInteractions(presupuestoRepo);
+    }
+
+    // Caso de error: monto negativo.
+    // Comportamiento esperado: rechazar monto negativo por regla de negocio.
+    // Comportamiento actual del codigo: se acepta y se persiste el egreso con valor negativo.
+    // Observación: al aceptar negativos, el egreso puede alterar saldos en dirección contraria a lo esperado.
+    @Test
+    void egresoMontoNegativo() {
+        EgresoDTO dto = new EgresoDTO(-1000.0, "2026-03-10", 4, "Ajuste negativo");
+
+        transaccionUseCase.registrarEgreso(dto);
+
+        ArgumentCaptor<Egreso> captor = ArgumentCaptor.forClass(Egreso.class);
+        verify(transaccionRepo).guardarEgreso(captor.capture());
+        assertEquals(-1000.0, captor.getValue().getMonto());
         verifyNoInteractions(presupuestoRepo);
     }
 

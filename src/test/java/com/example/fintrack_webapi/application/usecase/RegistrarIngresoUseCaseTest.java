@@ -1,25 +1,30 @@
 package com.example.fintrack_webapi.application.usecase;
 
-import com.example.fintrack_webapi.application.dto.commands.IngresoDTO;
-import com.example.fintrack_webapi.application.dto.queries.PresupuestoResponseDTO;
-import com.example.fintrack_webapi.domain.model.Categoria;
-import com.example.fintrack_webapi.domain.model.Ingreso;
-import com.example.fintrack_webapi.domain.model.PresupuestoMensual;
-import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
-import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.example.fintrack_webapi.application.dto.commands.IngresoDTO;
+import com.example.fintrack_webapi.application.dto.queries.PresupuestoResponseDTO;
+import com.example.fintrack_webapi.domain.model.Ingreso;
+import com.example.fintrack_webapi.domain.model.PresupuestoMensual;
+import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
+import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
 
 @ExtendWith(MockitoExtension.class)
 class RegistrarIngresoUseCaseTest {
@@ -110,6 +115,92 @@ class RegistrarIngresoUseCaseTest {
         // montos calculados correctamente (500.000 * 20% = 100.000)
         assertEquals(100_000.0, response.montosPorCategoria().get("SERVICIOS"));
         assertEquals(400_000.0, response.montosPorCategoria().get("DEUDAS"));
+    }
+
+    //VALIDACION DE MONTOS
+
+    // Caso de error: monto en cero.
+    // Comportamiento esperado: rechazar monto 0 por regla de negocio.
+    // Comportamiento actual del codigo: se acepta, se guarda ingreso y genera presupuesto con montos en 0.
+    // Observación: hoy el sistema permite registrar un ingreso sin valor, lo cual puede distorsionar reportes.
+    @Test
+    void ingresoMontoCero() {
+        Map<Integer, Double> porcentajes = Map.of(1, 100.0);
+        IngresoDTO dto = new IngresoDTO(0.0, "2026-01-01", porcentajes);
+
+        PresupuestoResponseDTO response = transaccionUseCase.registrarIngreso(dto);
+
+        assertEquals(0.0, response.montoTotal());
+        assertEquals(0.0, response.montosPorCategoria().get("SERVICIOS"));
+        verify(transaccionRepo, times(1)).guardarIngreso(any(Ingreso.class));
+        verify(presupuestoRepo, times(1)).guardar(any(PresupuestoMensual.class));
+    }
+
+    // Caso de error: monto negativo.
+    // Comportamiento esperado: rechazar monto negativo por regla de negocio.
+    // Comportamiento actual del codigo: se acepta y persiste valores negativos.
+    // Observación: hoy el sistema trata un ingreso negativo como válido, aunque funcionalmente se comporta como egreso.
+    @Test
+    void ingresoMontoNegativo() {
+        Map<Integer, Double> porcentajes = Map.of(1, 100.0);
+        IngresoDTO dto = new IngresoDTO(-500_000.0, "2026-01-01", porcentajes);
+
+        PresupuestoResponseDTO response = transaccionUseCase.registrarIngreso(dto);
+
+        assertEquals(-500_000.0, response.montoTotal());
+        assertEquals(-500_000.0, response.montosPorCategoria().get("SERVICIOS"));
+        verify(transaccionRepo, times(1)).guardarIngreso(any(Ingreso.class));
+        verify(presupuestoRepo, times(1)).guardar(any(PresupuestoMensual.class));
+    }
+
+    //VALIDACION DE PORCENTAJES
+
+    // Caso de error: porcentajes vacios.
+    // Comportamiento esperado: rechazar antes de persistir cualquier dato.
+    // Comportamiento actual del codigo: primero guarda ingreso y luego falla al distribuir (suma != 100).
+    // Observación: queda persistencia parcial; el ingreso existe en BD aunque el presupuesto falle.
+    @Test
+    void ingresoPorcentajesVaciosFallaDespuesDeGuardarIngreso() {
+        IngresoDTO dto = new IngresoDTO(500_000.0, "2026-01-01", Map.of());
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> transaccionUseCase.registrarIngreso(dto));
+
+        assertTrue(ex.getMessage().startsWith("La suma debe ser 100%"));
+        verify(transaccionRepo, times(1)).guardarIngreso(any(Ingreso.class));
+        verifyNoInteractions(presupuestoRepo);
+    }
+
+    // Caso de error: porcentajes nulos.
+    // Comportamiento esperado: validación controlada con mensaje claro.
+    // Comportamiento actual del codigo: ocurre NullPointerException al convertir categorias.
+    // Observación: falta validación de null en entrada; el error técnico llega tal cual sin mensaje de negocio.
+    @Test
+    void ingresoPorcentajesNullPropagaNpe() {
+        IngresoDTO dto = new IngresoDTO(500_000.0, "2026-01-01", null);
+
+        NullPointerException ex = assertThrows(NullPointerException.class,
+                () -> transaccionUseCase.registrarIngreso(dto));
+
+        verify(transaccionRepo, times(1)).guardarIngreso(any(Ingreso.class));
+        verifyNoInteractions(presupuestoRepo);
+    }
+
+    // Caso de error: suma de porcentajes distinta de 100.
+    // Comportamiento esperado: rechazar la solicitud sin persistencia parcial.
+    // Comportamiento actual del codigo: se guarda ingreso y luego falla en la regla de suma.
+    // Observación: la validación llega tarde; primero se persiste ingreso y después se detecta el error.
+    @Test
+    void ingresoPorcentajesSumaDistintaFallaConPersistenciaParcial() {
+        Map<Integer, Double> porcentajes = Map.of(1, 40.0, 4, 40.0);
+        IngresoDTO dto = new IngresoDTO(500_000.0, "2026-01-01", porcentajes);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> transaccionUseCase.registrarIngreso(dto));
+
+        assertTrue(ex.getMessage().startsWith("La suma debe ser 100%"));
+        verify(transaccionRepo, times(1)).guardarIngreso(any(Ingreso.class));
+        verifyNoInteractions(presupuestoRepo);
     }
 
     // Validacion Fechas

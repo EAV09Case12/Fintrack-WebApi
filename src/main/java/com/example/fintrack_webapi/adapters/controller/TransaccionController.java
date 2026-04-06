@@ -2,6 +2,7 @@ package com.example.fintrack_webapi.adapters.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class TransaccionController {
 
     @PostMapping("/SaveIngreso")
     @Operation(summary = "Registrar ingreso", description = "Crear un ingreso y su respectivo presupuesto mensual")
-    public PresupuestoResponseDTO registrarIngreso(@RequestBody IngresoDTO dto) {
+    public PresupuestoResponseDTO registrarIngreso(@Valid @RequestBody IngresoDTO dto){
         //TODO: process POST request
         
         return transaccionUseCase.registrarIngreso(dto);
@@ -34,7 +35,7 @@ public class TransaccionController {
     
     @PostMapping("/egreso")
     @Operation(summary = "Registrar egreso", description = "Crear un egreso")
-    public void registrarEgreso(@RequestBody EgresoDTO dto) {
+    public void registrarEgreso(@Valid @RequestBody EgresoDTO dto) {
 
         transaccionUseCase.registrarEgreso(dto);
     }

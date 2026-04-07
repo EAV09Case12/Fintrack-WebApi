@@ -71,12 +71,33 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
 
 
     private Date convertirFecha(String fechaStr) {
-        try {
-            return new SimpleDateFormat("yyyy-MM-dd").parse(fechaStr);
-        } catch (Exception e) {
-            throw new BadRequestException("Formato de fecha inválido");
+    try {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false); // formato estricto
+
+        Date fecha = sdf.parse(fechaStr);
+
+        // 🔒 Validación de rango
+        Date hoy = new Date();
+
+        long unAnio = 1000L * 60 * 60 * 24 * 365;
+
+        Date limitePasado = new Date(hoy.getTime() - unAnio);
+
+        if (fecha.before(limitePasado) || fecha.after(hoy)) {
+            throw new BadRequestException(
+                "La fecha debe estar comprendida desde un año atrás hasta la fecha actual."
+            );
         }
+
+        return fecha;
+
+    } catch (BadRequestException e) {
+        throw e;
+    } catch (Exception e) {
+        throw new BadRequestException("Formato de fecha inválido. Usa yyyy-MM-dd");
     }
+}
 
     private Map<Categoria, Double> convertirCategorias(Map<Integer, Double> entrada) {
     Map<Categoria, Double> resultado = new HashMap<>();

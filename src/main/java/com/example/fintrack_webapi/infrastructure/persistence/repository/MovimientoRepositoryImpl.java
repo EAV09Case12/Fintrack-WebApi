@@ -15,6 +15,11 @@ import com.example.fintrack_webapi.infrastructure.persistence.mapper.Transaccion
 import com.example.fintrack_webapi.infrastructure.dao.IngresoJpaRepository;
 import com.example.fintrack_webapi.infrastructure.dao.EgresoJpaRepository;
 import com.example.fintrack_webapi.infrastructure.dao.MovimientoJpaRepository;
+import com.example.fintrack_webapi.infrastructure.persistence.entity.MovimientoEntity;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Comparator;
+
 
 @Repository
 public class MovimientoRepositoryImpl implements TransaccionRepositoryPort {
@@ -33,9 +38,6 @@ public class MovimientoRepositoryImpl implements TransaccionRepositoryPort {
         this.movimientoRepository = movimientoRepository;
     }
 
-    // =========================
-    // INGRESO
-    // =========================
     @Override
     public Ingreso guardarIngreso(Ingreso ingreso) {
 
@@ -46,53 +48,76 @@ public class MovimientoRepositoryImpl implements TransaccionRepositoryPort {
         return TransaccionMapper.toDomain(saved);
     }
 
-    // =========================
-    // EGRESO
-    // =========================
     @Override
     public Egreso guardarEgreso(Egreso egreso) {
 
         var entity = TransaccionMapper.toEntityEgreso(egreso);
 
         var saved = egresoRepository.save(entity);
-        /*EgresoEntity saved = egresoJpaRepository.insertEgreso(entity);*/
+        
         return TransaccionMapper.toDomain(saved);
     }
 
-    // =========================
-    // HISTORIAL
-    // =========================
+
     @Override
     public List<Transaccion> obtenerHistorial() {
+        List<Transaccion> results = new ArrayList<>();
 
-        return movimientoRepository.findAllByOrderByFechaDesc()
-                .stream()
-                .map(TransaccionMapper::toDomain)
-                .collect(Collectors.toList());
+        List<MovimientoEntity> movimientos = movimientoRepository.findAll();
+
+        for (MovimientoEntity m : movimientos) {
+            String tipo = m.getTipoTransferencia();
+            Integer id = m.getIdTransferencia();
+
+            if (tipo == null || id == null) continue;
+
+            if ("ingreso".equalsIgnoreCase(tipo)) {
+                Optional.ofNullable(ingresoRepository.findById(id.longValue()))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .map(TransaccionMapper::toDomain)
+                        .ifPresent(t -> results.add((Transaccion) t));
+            } else if ("egreso".equalsIgnoreCase(tipo)) {
+                Optional.ofNullable(egresoRepository.findById(id.longValue()))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .map(TransaccionMapper::toDomain)
+                        .ifPresent(t -> results.add((Transaccion) t));
+            }
+        }
+
+        results.sort(Comparator.comparing(Transaccion::getFecha).reversed());
+        return results;
     }
 
-    // =========================
-    // ÚLTIMOS MOVIMIENTOS
-    // =========================
     @Override
     public List<Transaccion> obtenerUltimosMovimientos(int cantidad) {
-
-        return movimientoRepository.findAllByOrderByFechaDesc()
-                .stream()
-                .limit(cantidad)
-                .map(TransaccionMapper::toDomain)
-                .collect(Collectors.toList());
+        List<Transaccion> all = obtenerHistorial();
+        return all.stream().limit(cantidad).collect(Collectors.toList());
     }
 
-    // =========================
-    // POR CATEGORÍA
-    // =========================
     @Override
     public List<Transaccion> obtenerPorCategoria(int codigoCategoria) {
+        List<Transaccion> results = new ArrayList<>();
 
-        return movimientoRepository.findByCategoria(codigoCategoria)
-                .stream()
-                .map(TransaccionMapper::toDomain)
-                .collect(Collectors.toList());
+        List<MovimientoEntity> movimientos = movimientoRepository.findAll();
+
+        for (MovimientoEntity m : movimientos) {
+            if (m.getTipoTransferencia() == null) continue;
+            if (!"egreso".equalsIgnoreCase(m.getTipoTransferencia())) continue;
+
+            Integer id = m.getIdTransferencia();
+            if (id == null) continue;
+
+            Optional.ofNullable(egresoRepository.findById(id.longValue()))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .filter(e -> e.getIdcat() == codigoCategoria)
+                    .map(TransaccionMapper::toDomain)
+                    .ifPresent(t -> results.add((Transaccion) t));
+        }
+
+        results.sort(Comparator.comparing(Transaccion::getFecha).reversed());
+        return results;
     }
 }

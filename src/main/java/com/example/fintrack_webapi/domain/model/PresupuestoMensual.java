@@ -47,7 +47,6 @@ public class PresupuestoMensual {
                 .mapToDouble(Double::doubleValue)
                 .sum();
         
-        // Aumenta el margen de error de 0.01 a 0.1
         if (Math.abs(suma - 100.0) > 0.1) {
             throw new IllegalArgumentException("La suma debe ser 100%. Suma actual: " + suma);
         }

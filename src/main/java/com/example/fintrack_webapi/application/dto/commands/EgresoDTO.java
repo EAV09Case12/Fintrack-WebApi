@@ -4,8 +4,9 @@ import jakarta.validation.constraints.*;
 
 public record EgresoDTO(
 
-    @Positive(message = "El monto debe ser mayor a 0")
-    double monto,
+    @NotNull(message = "El monto es obligatorio")
+    @DecimalMin(value = "1.0", inclusive = true, message = "El monto de egreso debe ser mayor o igual a 1")
+    Double monto,
 
     @NotBlank(message = "La fecha es obligatoria")
     String fecha,

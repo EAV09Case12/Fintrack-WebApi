@@ -42,10 +42,6 @@ public class ConsultaUseCase implements ConsultaUseCasePort {
             .collect(Collectors.toList());
     }
 
-    // =========================
-    // MÉTODOS PRIVADOS
-    // =========================
-
     private MovimientoDTO mapToDTO(Transaccion t) {
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
 

@@ -8,10 +8,12 @@ import com.example.fintrack_webapi.infrastructure.persistence.entity.Presupuesto
 import com.example.fintrack_webapi.infrastructure.persistence.mapper.PresupuestoMapper;
 import com.example.fintrack_webapi.infrastructure.dao.PresupuestoJpaRepository;
 
+import java.util.Date;
+import java.util.List;
 
 @Repository
 public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort{
- private final PresupuestoJpaRepository jpaRepository;
+    private final PresupuestoJpaRepository jpaRepository;
 
     public PresupuestoRepositoryImpl(PresupuestoJpaRepository jpaRepository) {
         this.jpaRepository = jpaRepository;
@@ -19,26 +21,14 @@ public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort{
 
     @Override
     public PresupuestoMensual guardar(PresupuestoMensual presupuesto) {
-        System.out.println("=== DEBUG ===");
-        System.out.println("Fecha: " + presupuesto.getFecha());
-        System.out.println("Monto Total: " + presupuesto.getMontoTotal());
-        System.out.println("Distribucion: " + presupuesto.obtenerDistribucion());
-        
-        PresupuestoEntity entity = PresupuestoMapper.toEntity(presupuesto);
-        
-        System.out.println("Entity montoTotal: " + entity.getMontoTotal());
-        System.out.println("Entity serviciosCat: " + entity.getServiciosCat());
-        
-        PresupuestoEntity saved = jpaRepository.save(entity);
-        /*PresupuestoEntity saved = jpaRepository.insertPresupuesto(entity);*/
+        List<PresupuestoEntity> entities = PresupuestoMapper.toEntities(presupuesto);
+        List<PresupuestoEntity> saved = jpaRepository.saveAll(entities);
         return PresupuestoMapper.toDomain(saved);
-}
-    /*public PresupuestoMensual guardar(PresupuestoMensual presupuesto) {
+    }
 
-        PresupuestoEntity entity = PresupuestoMapper.toEntity(presupuesto);
-
-        PresupuestoEntity saved = jpaRepository.insertPresupuesto(entity);
-
-        return PresupuestoMapper.toDomain(saved);
-    }*/
+    @Override
+    public PresupuestoMensual obtenerPorFecha(Date fecha) {
+        List<PresupuestoEntity> rows = jpaRepository.findByFecha(fecha);
+        return PresupuestoMapper.toDomain(rows);
+    }
 }

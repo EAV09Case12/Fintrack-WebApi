@@ -5,6 +5,7 @@ import com.example.fintrack_webapi.domain.model.Ingreso;
 import com.example.fintrack_webapi.domain.model.Transaccion;
 import com.example.fintrack_webapi.domain.model.Categoria;
 
+// MovimientoEntity mapping handled by repository logic now
 import com.example.fintrack_webapi.infrastructure.persistence.entity.IngresoEntity;
 import com.example.fintrack_webapi.infrastructure.persistence.entity.EgresoEntity;
 import com.example.fintrack_webapi.infrastructure.persistence.entity.MovimientoEntity;
@@ -30,8 +31,8 @@ public class TransaccionMapper {
         entity.setMonto(egreso.getMonto());
         entity.setFecha(egreso.getFecha());
 
-        // 🔥 ahora es int, no entity
-        entity.setCategoria(egreso.getCategoria().getCodigo());
+        
+        entity.setIdcat(egreso.getCategoria().getCodigo());
 
         entity.setDescripcion(egreso.getDescripcion());
 
@@ -54,38 +55,18 @@ public class TransaccionMapper {
         return new Egreso(
                 entity.getMonto(),
                 entity.getFecha(),
-                buscarPorCodigo(entity.getCategoria()), // 🔥 cambio clave
+                buscarPorCodigo(entity.getIdcat()),
                 entity.getDescripcion()
         );
     }
 
-    // =========================
-    // MOVIMIENTO → DOMAIN
-    // =========================
-
+ 
+    
     public static Transaccion toDomain(MovimientoEntity entity) {
-        Integer cat = entity.getCategoria();
-
-        if (cat != null && cat.intValue() != 0) {
-            // es egreso
-            return new Egreso(
-                    entity.getMonto(),
-                    entity.getFecha(),
-                    buscarPorCodigo(cat.intValue()),
-                    entity.getDescripcion()
-            );
-        } else {
-            // es ingreso
-            return new Ingreso(
-                    entity.getMonto(),
-                    entity.getFecha()
-            );
-        }
+        throw new UnsupportedOperationException("Mapeo directo desde MovimientoEntity no soportado. Use el repositorio para resolver ingreso/egreso.");
     }
 
-    // =========================
-    // MÉTODO AUXILIAR 🔥
-    // =========================
+
 
     private static Categoria buscarPorCodigo(int codigo) {
 

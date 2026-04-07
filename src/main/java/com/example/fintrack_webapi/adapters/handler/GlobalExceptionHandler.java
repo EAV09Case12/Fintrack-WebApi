@@ -7,14 +7,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 🔴 400 - errores del cliente
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex) {
 
@@ -27,7 +31,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    // 🔵 404 - recurso no encontrado
+    
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
 
@@ -40,7 +44,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    // ⚫ 500 - error general
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
 
@@ -54,21 +57,34 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex,
+                                                                      HttpServletRequest request) {
 
         Map<String, Object> error = new HashMap<>();
         error.put("timestamp", LocalDateTime.now());
         error.put("status", 400);
         error.put("error", "Bad Request");
 
-        String mensaje = ex.getBindingResult()
+        List<Map<String, String>> details = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .map(e -> {
+                    Map<String, String> m = new HashMap<>();
+                    m.put("field", e.getField());
+                    m.put("message", e.getDefaultMessage());
+                    return m;
+                })
+                .collect(Collectors.toList());
+
+        String mensaje = details.stream()
+                .map(d -> d.get("field") + ": " + d.get("message"))
                 .findFirst()
                 .orElse("Error de validación");
 
         error.put("message", mensaje);
+        error.put("details", details);
+        error.put("path", request.getRequestURI());
+        error.put("traceId", UUID.randomUUID().toString());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }

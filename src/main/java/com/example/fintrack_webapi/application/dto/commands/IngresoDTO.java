@@ -5,8 +5,9 @@ import java.util.Map;
 
 public record IngresoDTO(
 
-    @Positive(message = "El monto debe ser mayor a 0")
-    double monto,
+    @NotNull(message = "El monto es obligatorio")
+    @DecimalMin(value = "200.0", inclusive = true, message = "El monto de ingreso debe ser mayor o igual a 200")
+    Double monto,
 
     @NotBlank(message = "La fecha es obligatoria")
     String fecha,

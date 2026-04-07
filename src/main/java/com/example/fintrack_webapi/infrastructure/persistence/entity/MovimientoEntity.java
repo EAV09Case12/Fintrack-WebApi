@@ -3,19 +3,22 @@ package com.example.fintrack_webapi.infrastructure.persistence.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+
+import java.io.Serializable;
+import java.util.Objects;
+
 import jakarta.persistence.Column;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.util.Date;
 
 @Entity
 @Table(name = "movimiento")
+@IdClass(MovimientoEntity.MovimientoId.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,19 +26,41 @@ import java.util.Date;
 public class MovimientoEntity {
 
     @Id
-    @Column(name = "idMov", insertable = false, updatable = false)
-    private Long id;
+    @Column(name = "tipotransferencia", insertable = false, updatable = false)
+    private String tipoTransferencia;
 
-    @Column(nullable = false)
-    private double monto;
+    @Id
+    @Column(name = "idtransferencia", insertable = false, updatable = false)
+    private Integer idTransferencia;
 
-    @Column(nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date fecha;
+    public static class MovimientoId implements Serializable {
+        private String tipoTransferencia;
+        private Integer idTransferencia;
 
-    @Column
-    private Integer categoria; // FK (guardas el código del enum)
+        public MovimientoId() {}
 
-    @Column
-    private String descripcion;
+        public MovimientoId(String tipoTransferencia, Integer idTransferencia) {
+            this.tipoTransferencia = tipoTransferencia;
+            this.idTransferencia = idTransferencia;
+        }
+
+        public String getTipoTransferencia() { return tipoTransferencia; }
+        public void setTipoTransferencia(String tipoTransferencia) { this.tipoTransferencia = tipoTransferencia; }
+        public Integer getIdTransferencia() { return idTransferencia; }
+        public void setIdTransferencia(Integer idTransferencia) { this.idTransferencia = idTransferencia; }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            MovimientoId that = (MovimientoId) o;
+            return Objects.equals(tipoTransferencia, that.tipoTransferencia) &&
+                   Objects.equals(idTransferencia, that.idTransferencia);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(tipoTransferencia, idTransferencia);
+        }
+    }
 }

@@ -1,14 +1,13 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
-
+FROM eclipse-temurin:21-jdk
 WORKDIR /app
-COPY . .
-RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
 
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+RUN chmod +x mvnw
+RUN ./mvnw dependency:go-offline
 
-EXPOSE 8080
+COPY src src
+RUN ./mvnw clean package -DskipTests
 
-CMD ["java","-jar","app.jar"]
+CMD ["sh", "-c", "java -Dserver.port=$PORT -jar target/*.jar"]

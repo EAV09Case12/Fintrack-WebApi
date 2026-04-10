@@ -8,7 +8,7 @@ import com.example.fintrack_webapi.domain.port.input.TransaccionUseCasePort;
 import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
 import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
 import org.springframework.stereotype.Service;
-import com.example.fintrack_webapi.application.dto.commands.PresupuestoDTO;
+import com.example.fintrack_webapi.domain.exception.BadRequestException;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,40 +28,31 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
         this.presupuestoRepo = presupuestoRepo;
     }
 
-    // =========================
-    // INGRESO
-    // =========================
+
     @Override
     public PresupuestoResponseDTO registrarIngreso(IngresoDTO dto) {
 
-        // 1. convertir fecha
         Date fecha = convertirFecha(dto.fecha());
 
-        // 2. crear entidad de dominio (Ingreso)
         Ingreso ingreso = new Ingreso(dto.monto(), fecha);
 
-        // 3. guardar ingreso
-        ingreso = transaccionRepo.guardarIngreso(ingreso);
-
-        // 4. crear presupuesto usando el constructor con Ingreso
-        PresupuestoMensual presupuesto = new PresupuestoMensual(ingreso);  // ← CAMBIO AQUÍ
-
-        // 5. convertir porcentajes (Map<Integer,Double> → Map<Categoria,Double>)
+        PresupuestoMensual presupuesto = new PresupuestoMensual(ingreso);
         Map<Categoria, Double> porcentajesPorCategoria = convertirCategorias(dto.porcentajes());
 
-        // 6. distribuir
-        presupuesto.distribuir(porcentajesPorCategoria);
+        try {
+            presupuesto.distribuir(porcentajesPorCategoria);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("La suma de los porcentajes debe dar cien");
+        }
 
-        // 7. guardar presupuesto
+        ingreso = transaccionRepo.guardarIngreso(ingreso);
+
         presupuesto = presupuestoRepo.guardar(presupuesto);
 
-        // 8. devolver respuesta
         return toResponse(presupuesto);
     }
 
-    // =========================
-    // EGRESO
-    // =========================
+
     @Override
     public void registrarEgreso(EgresoDTO dto) {
 
@@ -74,23 +65,39 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
                 dto.descripcion()
         );
 
-        // guardar en tabla egreso
         transaccionRepo.guardarEgreso(egreso);
 
-        // ⚠ movimiento lo crea el trigger
     }
 
-    // =========================
-    // MÉTODOS PRIVADOS
-    // =========================
 
     private Date convertirFecha(String fechaStr) {
-        try {
-            return new SimpleDateFormat("yyyy-MM-dd").parse(fechaStr);
-        } catch (Exception e) {
-            throw new RuntimeException("Formato de fecha inválido");
+    try {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false); // formato estricto
+
+        Date fecha = sdf.parse(fechaStr);
+
+        // 🔒 Validación de rango
+        Date hoy = new Date();
+
+        long unAnio = 1000L * 60 * 60 * 24 * 365;
+
+        Date limitePasado = new Date(hoy.getTime() - unAnio);
+
+        if (fecha.before(limitePasado) || fecha.after(hoy)) {
+            throw new BadRequestException(
+                "La fecha debe estar comprendida desde un año atrás hasta la fecha actual."
+            );
         }
+
+        return fecha;
+
+    } catch (BadRequestException e) {
+        throw e;
+    } catch (Exception e) {
+        throw new BadRequestException("Formato de fecha inválido. Usa yyyy-MM-dd");
     }
+}
 
     private Map<Categoria, Double> convertirCategorias(Map<Integer, Double> entrada) {
     Map<Categoria, Double> resultado = new HashMap<>();
@@ -111,7 +118,7 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
             }
         }
 
-        throw new RuntimeException("Categoría inválida");
+        throw new BadRequestException("Categoría inválida");
     }
 
     private PresupuestoResponseDTO toResponse(PresupuestoMensual p) {
@@ -123,10 +130,9 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
         }
 
         return new PresupuestoResponseDTO(
-                null, // ⚠ lo asigna JPA después (ajustar cuando tengas entity)
-                p.getFecha().toString(),
-                p.getMontoTotal(),
-                resultado
+            p.getFecha().toString(),
+            p.getMontoTotal(),
+            resultado
         );
     }
 }

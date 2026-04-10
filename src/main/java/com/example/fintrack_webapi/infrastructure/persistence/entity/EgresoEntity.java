@@ -36,8 +36,8 @@ public class EgresoEntity {
     @Temporal(TemporalType.DATE)
     private Date fecha;
 
-    @Column(name = "categoria", nullable = false)
-    private int categoria;
+    @Column(name = "idcat", nullable = false)
+    private int idcat;
 
     @Column(name = "descripcion", nullable = false, length = 150)
     private String descripcion;

@@ -7,10 +7,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.fintrack_webapi.application.dto.queries.BalanceDTO;
 import com.example.fintrack_webapi.application.dto.queries.MovimientoDTO;
 import com.example.fintrack_webapi.application.usecase.ConsultaUseCase;
 import com.example.fintrack_webapi.infrastructure.dao.MovimientoJpaRepository;
 import com.example.fintrack_webapi.domain.model.Categoria;
+import com.example.fintrack_webapi.domain.port.input.BalanceUseCasePort;
 import com.example.fintrack_webapi.domain.exception.BadRequestException;
 
 import java.util.List;
@@ -23,6 +25,7 @@ public class HistorialController {
 
     private final ConsultaUseCase consultaUseCase;
     private final MovimientoJpaRepository movimientoRepository;
+    private final BalanceUseCasePort balanceUseCase;
 
     @GetMapping("/historial")
     @Operation(summary = "Consultar historial", description = "Consultar el historial de transacciones")
@@ -72,4 +75,9 @@ public class HistorialController {
         return ResponseEntity.ok(resultado);
     }
 
+    @GetMapping("/balance")
+    @Operation(summary = "Consultar balance financiero", description = "Obtiene ingresos, gastos y balance")
+    public ResponseEntity<BalanceDTO> consultarBalance() {
+        return ResponseEntity.ok(balanceUseCase.obtenerBalance());
+    }
 }

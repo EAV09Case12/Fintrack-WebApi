@@ -9,5 +9,4 @@ public interface ConsultaUseCasePort {
 	List<MovimientoDTO> obtenerUltimosMovimientos(int cantidad);
 
 	List<MovimientoDTO> obtenerPorCategoria(int codigoCategoria);
-
 }

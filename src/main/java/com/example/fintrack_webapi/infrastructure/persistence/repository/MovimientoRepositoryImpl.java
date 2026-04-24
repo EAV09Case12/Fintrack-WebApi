@@ -120,4 +120,21 @@ public class MovimientoRepositoryImpl implements TransaccionRepositoryPort {
         results.sort(Comparator.comparing(Transaccion::getFecha).reversed());
         return results;
     }
+
+    @Override
+    public double[] obtenerBalanceMensual(int mes, int anio) {
+
+        List<Object[]> results = movimientoRepository.obtenerBalanceMensual(mes, anio);
+
+        if (results == null || results.isEmpty()) {
+            return new double[]{0.0, 0.0};
+        }
+
+        Object[] row = results.get(0);
+
+        double ingresos = (row[0] == null) ? 0.0 : ((Number) row[0]).doubleValue();
+        double gastos   = (row[1] == null) ? 0.0 : ((Number) row[1]).doubleValue();
+
+        return new double[]{ingresos, gastos};
+    }
 }

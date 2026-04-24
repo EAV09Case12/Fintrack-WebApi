@@ -76,8 +76,10 @@ public class HistorialController {
     }
 
     @GetMapping("/balance")
-    @Operation(summary = "Consultar balance financiero", description = "Obtiene ingresos, gastos y balance")
-    public ResponseEntity<BalanceDTO> consultarBalance() {
-        return ResponseEntity.ok(balanceUseCase.obtenerBalance());
+    @Operation(summary = "Consultar balance financiero", description = "Balance por mes actual o por fecha")
+    public ResponseEntity<BalanceDTO> consultarBalance(
+            @RequestParam(required = false) String fecha) {
+
+        return ResponseEntity.ok(balanceUseCase.obtenerBalance(fecha));
     }
 }

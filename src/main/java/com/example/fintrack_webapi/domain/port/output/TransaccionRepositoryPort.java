@@ -15,4 +15,6 @@ public interface TransaccionRepositoryPort {
     List<Transaccion> obtenerUltimosMovimientos(int cantidad);
 
     List<Transaccion> obtenerPorCategoria(int codigoCategoria);
+
+    double[] obtenerBalanceMensual(int mes, int anio);
 }

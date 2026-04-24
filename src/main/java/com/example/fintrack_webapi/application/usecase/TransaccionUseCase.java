@@ -77,7 +77,7 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
 
         Date fecha = sdf.parse(fechaStr);
 
-        // 🔒 Validación de rango
+       
         Date hoy = new Date();
 
         long unAnio = 1000L * 60 * 60 * 24 * 365;

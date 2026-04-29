@@ -2,7 +2,8 @@ package com.example.fintrack_webapi.application.usecase;
 
 import com.example.fintrack_webapi.application.dto.queries.BalanceDTO;
 import com.example.fintrack_webapi.domain.port.input.BalanceUseCasePort;
-import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
+import com.example.fintrack_webapi.domain.port.output.BalanceRepositoryPort;
+
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -14,10 +15,10 @@ import com.example.fintrack_webapi.domain.exception.BadRequestException;
 @Service
 public class BalanceUseCase implements BalanceUseCasePort {
 
-    private final TransaccionRepositoryPort transaccionRepo;
+    private final BalanceRepositoryPort balanceRepo;
 
-    public BalanceUseCase(TransaccionRepositoryPort transaccionRepo) {
-        this.transaccionRepo = transaccionRepo;
+    public BalanceUseCase(BalanceRepositoryPort balanceRepo) {
+        this.balanceRepo = balanceRepo;
     }
 
     @Override
@@ -31,14 +32,10 @@ public class BalanceUseCase implements BalanceUseCasePort {
         int mes = cal.get(Calendar.MONTH) + 1; 
         int anio = cal.get(Calendar.YEAR);
 
-        double[] resultado = transaccionRepo.obtenerBalanceMensual(mes, anio);
-
-        double ingresos = resultado[0];
-        double gastos = resultado[1];
+       double ingresos = balanceRepo.obtenerTotalIngresos(mes, anio);
+       double gastos = balanceRepo.obtenerTotalGastos(mes, anio);
 
         double balance = ingresos - gastos;
-
-        double total = ingresos + gastos;
 
         double porcentajeGastos = ingresos == 0 ? 0 : (gastos / ingresos) * 100;
         double porcentajeAhorro = ingresos == 0 ? 0 : (balance / ingresos) * 100;

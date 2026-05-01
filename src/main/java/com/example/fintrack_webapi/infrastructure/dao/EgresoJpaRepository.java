@@ -1,5 +1,7 @@
 package com.example.fintrack_webapi.infrastructure.dao;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.fintrack_webapi.infrastructure.persistence.entity.EgresoEntity;
 import org.springframework.data.jpa.repository.Modifying;
@@ -15,4 +17,14 @@ public interface EgresoJpaRepository extends JpaRepository<EgresoEntity, Long> {
            ":#{#entity.categoria}, :#{#entity.descripcion})",
            nativeQuery = true)
     void insertEgreso(@Param("entity") EgresoEntity entity);
+
+        @Query("""
+        SELECT e FROM EgresoEntity e
+        WHERE EXTRACT(MONTH FROM e.fecha) = :mes
+        AND EXTRACT(YEAR FROM e.fecha) = :anio
+    """)
+    List<EgresoEntity> findByMesAndAnio(
+        @Param("mes") int mes,
+        @Param("anio") int anio
+    );
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.fintrack_webapi.application.dto.queries.BalanceDTO;
 import com.example.fintrack_webapi.application.dto.queries.MovimientoDTO;
 import com.example.fintrack_webapi.application.usecase.ConsultaUseCase;
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.fintrack_webapi.infrastructure.dao.MovimientoJpaRepository;
 import com.example.fintrack_webapi.domain.model.Categoria;
 import com.example.fintrack_webapi.domain.port.input.BalanceUseCasePort;
@@ -27,6 +28,7 @@ public class HistorialController {
     private final MovimientoJpaRepository movimientoRepository;
     private final BalanceUseCasePort balanceUseCase;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/historial")
     @Operation(summary = "Consultar historial", description = "Consultar el historial de transacciones")
     public ResponseEntity<List<MovimientoDTO>> consultarHistorial() {
@@ -45,6 +47,7 @@ public class HistorialController {
         return ResponseEntity.ok(resultado);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/ultimos")
     @Operation(summary = "Consultar últimos movimientos", description = "Consultar los últimos movimientos")
     public ResponseEntity<List<MovimientoDTO>> consultarUltimosMovimientos(@RequestParam int cantidad) {
@@ -56,6 +59,7 @@ public class HistorialController {
         return ResponseEntity.ok(resultado);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/por-categoria")
     @Operation(summary = "Consultar movimientos por categoría", description = "Consultar movimientos filtrados por categoría")
     public ResponseEntity<List<MovimientoDTO>> consultarPorCategoria(@RequestParam int codigoCategoria) {
@@ -75,6 +79,7 @@ public class HistorialController {
         return ResponseEntity.ok(resultado);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/balance")
     @Operation(summary = "Consultar balance financiero", description = "Balance por mes actual o por fecha")
     public ResponseEntity<BalanceDTO> consultarBalance(

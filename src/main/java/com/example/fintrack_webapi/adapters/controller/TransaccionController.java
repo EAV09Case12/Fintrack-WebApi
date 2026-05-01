@@ -12,6 +12,8 @@ import com.example.fintrack_webapi.application.dto.commands.EgresoDTO;
 import com.example.fintrack_webapi.application.dto.commands.IngresoDTO;
 import com.example.fintrack_webapi.application.dto.queries.PresupuestoResponseDTO;
 import com.example.fintrack_webapi.application.usecase.TransaccionUseCase;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 
 @RestController
@@ -22,6 +24,7 @@ public class TransaccionController {
 
     private final TransaccionUseCase transaccionUseCase;
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping("/SaveIngreso")
     @Operation(summary = "Registrar ingreso", description = "Crear un ingreso y su respectivo presupuesto mensual")
     public ResponseEntity<PresupuestoResponseDTO> registrarIngreso(@Valid @RequestBody IngresoDTO dto){
@@ -30,6 +33,7 @@ public class TransaccionController {
     }
     
     
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping("/egreso")
     @Operation(summary = "Registrar egreso", description = "Crear un egreso")
     public ResponseEntity<Void> registrarEgreso(@Valid @RequestBody EgresoDTO dto) {

@@ -32,6 +32,10 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
     @Override
     public PresupuestoResponseDTO registrarIngreso(IngresoDTO dto) {
 
+        if (dto.monto() <= 0) {
+        throw new BadRequestException("El monto debe ser mayor a 0");
+        }
+
         Date fecha = convertirFecha(dto.fecha());
 
         Ingreso ingreso = new Ingreso(dto.monto(), fecha);
@@ -55,6 +59,10 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
 
     @Override
     public void registrarEgreso(EgresoDTO dto) {
+
+        if (dto.monto() <= 0) {
+            throw new BadRequestException("El monto debe ser mayor a 0");
+        }
 
         Date fecha = convertirFecha(dto.fecha());
 

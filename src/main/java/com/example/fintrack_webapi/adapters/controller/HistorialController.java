@@ -2,6 +2,10 @@ package com.example.fintrack_webapi.adapters.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -18,6 +22,7 @@ import com.example.fintrack_webapi.domain.exception.BadRequestException;
 
 import java.util.List;
 
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/consultas")
 @RequiredArgsConstructor
@@ -30,10 +35,18 @@ public class HistorialController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/historial")
-    @Operation(summary = "Consultar historial", description = "Consultar el historial de transacciones")
+    @Operation(
+        summary = "Consultar historial",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Historial obtenido correctamente", content = @Content),
+            @ApiResponse(responseCode = "401", ref = "#/components/responses/Unauthorized"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/Forbidden")
+        }
+    )
     public ResponseEntity<List<MovimientoDTO>> consultarHistorial() {
-        
+
         List<Object[]> rows = movimientoRepository.fetchHistorialNative();
+
         List<MovimientoDTO> resultado = rows.stream().map(row -> {
             Long id = row[0] == null ? null : ((Number) row[0]).longValue();
             String tipo = row[1] == null ? null : row[1].toString();
@@ -49,8 +62,16 @@ public class HistorialController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/ultimos")
-    @Operation(summary = "Consultar últimos movimientos", description = "Consultar los últimos movimientos")
+    @Operation(
+        summary = "Consultar últimos movimientos",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Movimientos obtenidos correctamente", content = @Content),
+            @ApiResponse(responseCode = "401", ref = "#/components/responses/Unauthorized"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/Forbidden")
+        }
+    )
     public ResponseEntity<List<MovimientoDTO>> consultarUltimosMovimientos(@RequestParam int cantidad) {
+
         if (cantidad < 1 || cantidad > 20) {
             throw new BadRequestException("Parámetro 'cantidad' debe estar entre 1 y 20");
         }
@@ -61,8 +82,16 @@ public class HistorialController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/por-categoria")
-    @Operation(summary = "Consultar movimientos por categoría", description = "Consultar movimientos filtrados por categoría")
+    @Operation(
+        summary = "Consultar movimientos por categoría",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Movimientos filtrados correctamente", content = @Content),
+            @ApiResponse(responseCode = "401", ref = "#/components/responses/Unauthorized"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/Forbidden")
+        }
+    )
     public ResponseEntity<List<MovimientoDTO>> consultarPorCategoria(@RequestParam int codigoCategoria) {
+
         boolean existe = false;
         for (Categoria c : Categoria.values()) {
             if (c.getCodigo() == codigoCategoria) {
@@ -81,7 +110,14 @@ public class HistorialController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/balance")
-    @Operation(summary = "Consultar balance financiero", description = "Balance por mes actual o por fecha")
+    @Operation(
+        summary = "Consultar balance financiero",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "Balance obtenido correctamente", content = @Content),
+            @ApiResponse(responseCode = "401", ref = "#/components/responses/Unauthorized"),
+            @ApiResponse(responseCode = "403", ref = "#/components/responses/Forbidden")
+        }
+    )
     public ResponseEntity<BalanceDTO> consultarBalance(
             @RequestParam(required = false) String fecha) {
 

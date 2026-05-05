@@ -33,7 +33,7 @@ public class HistorialController {
     private final MovimientoJpaRepository movimientoRepository;
     private final BalanceUseCasePort balanceUseCase;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/historial")
     @Operation(
         summary = "Consultar historial",

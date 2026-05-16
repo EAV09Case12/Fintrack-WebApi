@@ -8,11 +8,13 @@ import com.example.fintrack_webapi.infrastructure.persistence.entity.Presupuesto
 import com.example.fintrack_webapi.infrastructure.persistence.mapper.PresupuestoMapper;
 import com.example.fintrack_webapi.infrastructure.dao.PresupuestoJpaRepository;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 @Repository
-public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort{
+public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort {
+
     private final PresupuestoJpaRepository jpaRepository;
 
     public PresupuestoRepositoryImpl(PresupuestoJpaRepository jpaRepository) {
@@ -21,14 +23,45 @@ public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort{
 
     @Override
     public PresupuestoMensual guardar(PresupuestoMensual presupuesto) {
-        List<PresupuestoEntity> entities = PresupuestoMapper.toEntities(presupuesto);
-        List<PresupuestoEntity> saved = jpaRepository.saveAll(entities);
+
+        List<PresupuestoEntity> entities =
+                PresupuestoMapper.toEntities(presupuesto);
+
+        List<PresupuestoEntity> saved =
+                jpaRepository.saveAll(entities);
+
         return PresupuestoMapper.toDomain(saved);
     }
 
     @Override
     public PresupuestoMensual obtenerPorFecha(Date fecha) {
-        List<PresupuestoEntity> rows = jpaRepository.findByFecha(fecha);
+
+        Calendar inicio = Calendar.getInstance();
+        inicio.setTime(fecha);
+
+        inicio.set(Calendar.DAY_OF_MONTH, 1);
+        inicio.set(Calendar.HOUR_OF_DAY, 0);
+        inicio.set(Calendar.MINUTE, 0);
+        inicio.set(Calendar.SECOND, 0);
+        inicio.set(Calendar.MILLISECOND, 0);
+
+        Calendar fin = Calendar.getInstance();
+        fin.setTime(inicio.getTime());
+
+        fin.set(Calendar.DAY_OF_MONTH,
+                fin.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        fin.set(Calendar.HOUR_OF_DAY, 23);
+        fin.set(Calendar.MINUTE, 59);
+        fin.set(Calendar.SECOND, 59);
+        fin.set(Calendar.MILLISECOND, 999);
+
+        List<PresupuestoEntity> rows =
+                jpaRepository.findByFechaBetween(
+                        inicio.getTime(),
+                        fin.getTime()
+                );
+
         return PresupuestoMapper.toDomain(rows);
     }
 }

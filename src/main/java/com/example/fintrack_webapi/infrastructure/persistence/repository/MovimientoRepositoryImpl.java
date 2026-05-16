@@ -19,6 +19,11 @@ import com.example.fintrack_webapi.infrastructure.persistence.entity.MovimientoE
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Comparator;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 
 @Repository
@@ -38,55 +43,79 @@ public class MovimientoRepositoryImpl implements TransaccionRepositoryPort {
         this.movimientoRepository = movimientoRepository;
     }
 
-    @Override
+   @Transactional
+   @Override
     public Ingreso guardarIngreso(Ingreso ingreso) {
 
         var entity = TransaccionMapper.toEntityIngreso(ingreso);
 
         var saved = ingresoRepository.save(entity);
 
+        MovimientoEntity movimiento = new MovimientoEntity();
+
+        movimiento.setTipoTransferencia("INGRESO");
+        movimiento.setIdTransferencia(saved.getId());
+        movimiento.setEmailUsuario(obtenerUsuarioAutenticado());
+        movimiento.setFechaMovimiento(LocalDateTime.now());
+
+        movimientoRepository.save(movimiento);
+
         return TransaccionMapper.toDomain(saved);
     }
-
+    
+    @Transactional
     @Override
     public Egreso guardarEgreso(Egreso egreso) {
 
         var entity = TransaccionMapper.toEntityEgreso(egreso);
 
         var saved = egresoRepository.save(entity);
-        
+
+        MovimientoEntity movimiento = new MovimientoEntity();
+
+        movimiento.setTipoTransferencia("EGRESO");
+        movimiento.setIdTransferencia(saved.getId());
+        movimiento.setEmailUsuario(obtenerUsuarioAutenticado());
+        movimiento.setFechaMovimiento(LocalDateTime.now());
+
+        movimientoRepository.save(movimiento);
+
         return TransaccionMapper.toDomain(saved);
     }
 
 
     @Override
     public List<Transaccion> obtenerHistorial() {
+
         List<Transaccion> results = new ArrayList<>();
 
         List<MovimientoEntity> movimientos = movimientoRepository.findAll();
 
         for (MovimientoEntity m : movimientos) {
-            String tipo = m.getTipoTransferencia();
-            Integer id = m.getIdTransferencia();
 
-            if (tipo == null || id == null) continue;
+            String tipo = m.getTipoTransferencia();
+            Long id = m.getIdTransferencia();
+
+            if (tipo == null || id == null) {
+                continue;
+            }
 
             if ("ingreso".equalsIgnoreCase(tipo)) {
-                Optional.ofNullable(ingresoRepository.findById(id.longValue()))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
+
+                ingresoRepository.findById(id)
                         .map(TransaccionMapper::toDomain)
-                        .ifPresent(t -> results.add((Transaccion) t));
+                        .ifPresent(results::add);
+
             } else if ("egreso".equalsIgnoreCase(tipo)) {
-                Optional.ofNullable(egresoRepository.findById(id.longValue()))
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
+
+                egresoRepository.findById(id)
                         .map(TransaccionMapper::toDomain)
-                        .ifPresent(t -> results.add((Transaccion) t));
+                        .ifPresent(results::add);
             }
         }
 
         results.sort(Comparator.comparing(Transaccion::getFecha).reversed());
+
         return results;
     }
 
@@ -98,27 +127,41 @@ public class MovimientoRepositoryImpl implements TransaccionRepositoryPort {
 
     @Override
     public List<Transaccion> obtenerPorCategoria(int codigoCategoria) {
+
         List<Transaccion> results = new ArrayList<>();
 
         List<MovimientoEntity> movimientos = movimientoRepository.findAll();
 
         for (MovimientoEntity m : movimientos) {
-            if (m.getTipoTransferencia() == null) continue;
-            if (!"egreso".equalsIgnoreCase(m.getTipoTransferencia())) continue;
 
-            Integer id = m.getIdTransferencia();
-            if (id == null) continue;
+            if (!"egreso".equalsIgnoreCase(m.getTipoTransferencia())) {
+                continue;
+            }
 
-            Optional.ofNullable(egresoRepository.findById(id.longValue()))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
+            Long id = m.getIdTransferencia();
+
+            if (id == null) {
+                continue;
+            }
+
+            egresoRepository.findById(id)
                     .filter(e -> e.getIdcat() == codigoCategoria)
                     .map(TransaccionMapper::toDomain)
-                    .ifPresent(t -> results.add((Transaccion) t));
+                    .ifPresent(results::add);
         }
 
         results.sort(Comparator.comparing(Transaccion::getFecha).reversed());
+
         return results;
+    }
+
+    private String obtenerUsuarioAutenticado() {
+
+        Authentication auth = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        return auth.getName();
     }
 
 }

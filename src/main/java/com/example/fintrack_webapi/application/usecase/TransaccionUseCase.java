@@ -7,6 +7,8 @@ import com.example.fintrack_webapi.domain.model.*;
 import com.example.fintrack_webapi.domain.port.input.TransaccionUseCasePort;
 import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
 import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.example.fintrack_webapi.domain.exception.BadRequestException;
 
@@ -142,5 +144,14 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
             p.getMontoTotal(),
             resultado
         );
+    }
+
+    private String obtenerUsuarioAutenticado() {
+
+        Authentication auth = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        return auth.getName();
     }
 }

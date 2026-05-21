@@ -11,13 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MovimientoReporteDTO {
 
+    private Long id;
+
     private double monto;
 
     private String fecha;
 
-    private int codigoCategoria;
+    private String categoria;
 
     private String descripcion;
 
-    private String tipoMovimiento;
+    private String emailUsuario;
 }

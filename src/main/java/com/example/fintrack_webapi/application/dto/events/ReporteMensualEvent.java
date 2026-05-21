@@ -1,34 +1,28 @@
 package com.example.fintrack_webapi.application.dto.events;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
+import java.util.List;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReporteMensualEvent implements Serializable {
-
-    private int mes;
 
     private String requestId;
 
-    public ReporteMensualEvent() {
-    }
+    private String emailUsuario;
 
-    public ReporteMensualEvent(int mes, String requestId) {
-        this.mes = mes;
-        this.requestId = requestId;
-    }
+    private int mes;
 
-    public int getMes() {
-        return mes;
-    }
+    private int anio;
 
-    public void setMes(int mes) {
-        this.mes = mes;
-    }
+    private List<MovimientoReporteDTO> egresos;
 
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
+    private List<PresupuestoReporteDTO> presupuestos;
 }

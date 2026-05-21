@@ -1,9 +1,6 @@
 package com.example.fintrack_webapi.infrastructure.config;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,20 +14,40 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String REPORT_QUEUE = "report.monthly.queue";
+    public static final String REPORT_EXCHANGE =
+            "fintrack.report.exchange";
 
-    public static final String REPORT_EXCHANGE = "report.monthly.exchange";
+    public static final String REPORT_QUEUE =
+            "fintrack.report.monthly.queue";
 
-    public static final String REPORT_ROUTING_KEY = "report.monthly.generated";
+    public static final String REPORT_ROUTING_KEY =
+            "report.monthly.generate";
 
-    @Bean
-    public Queue reportQueue() {
-        return new Queue(REPORT_QUEUE, true);
-    }
+    public static final String REPORT_DLQ =
+            "fintrack.report.monthly.dlq";
 
     @Bean
     public TopicExchange reportExchange() {
-        return new TopicExchange(REPORT_EXCHANGE, true, false);
+
+        return new TopicExchange(
+                REPORT_EXCHANGE
+        );
+    }
+
+    @Bean
+    public Queue reportQueue() {
+
+        return QueueBuilder
+                .durable(REPORT_QUEUE)
+                .build();
+    }
+
+    @Bean
+    public Queue deadLetterQueue() {
+
+        return QueueBuilder
+                .durable(REPORT_DLQ)
+                .build();
     }
 
     @Bean
@@ -46,7 +63,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public MessageConverter jsonMessageConverter() {
+    public MessageConverter
+    jsonMessageConverter() {
 
         return new Jackson2JsonMessageConverter();
     }
@@ -54,12 +72,17 @@ public class RabbitMQConfig {
     @Bean
     public RabbitTemplate rabbitTemplate(
             ConnectionFactory connectionFactory,
-            MessageConverter jsonMessageConverter
+            MessageConverter messageConverter
     ) {
 
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        RabbitTemplate template =
+                new RabbitTemplate(
+                        connectionFactory
+                );
 
-        template.setMessageConverter(jsonMessageConverter);
+        template.setMessageConverter(
+                messageConverter
+        );
 
         return template;
     }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.fintrack_webapi.application.dto.queries.ReporteResponseDTO;
 import com.example.fintrack_webapi.domain.exception.BadRequestException;
 import com.example.fintrack_webapi.domain.port.input.ReporteUseCasePort;
+import com.example.fintrack_webapi.infrastructure.security.SecurityUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -76,10 +77,7 @@ public class ReporteController {
                 UUID.randomUUID().toString();
 
         String emailUsuario =
-                SecurityContextHolder
-                        .getContext()
-                        .getAuthentication()
-                        .getName();
+            SecurityUtils.obtenerUsuarioAutenticado();
 
         reporteUseCase.generarReporteMensual(
                 mes,

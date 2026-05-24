@@ -1,40 +1,35 @@
 package com.example.fintrack_webapi.infrastructure.persistence.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "movimiento")
+@Table(name = "aud_movimiento")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class MovimientoEntity {
 
-   @Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "tipo_transferencia")
+    @Column(name = "tipotransferencia", nullable = false)
     private String tipoTransferencia;
 
-    @Column(name = "id_transferencia")
+    @Column(name = "idtransferencia", nullable = false)
     private Long idTransferencia;
 
-    @Column(name = "email_usuario")
-    private String emailUsuario;
+    @Column(name = "user_email", nullable = false)
+    private String userEmail;
 
-    @Column(name = "fecha_movimiento")
-    private LocalDateTime fechaMovimiento;
+    @Column(name = "realizado_en")
+    private LocalDateTime realizadoEn;
 }

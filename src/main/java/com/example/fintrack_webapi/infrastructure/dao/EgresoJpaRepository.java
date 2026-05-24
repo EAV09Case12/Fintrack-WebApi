@@ -20,10 +20,12 @@ public interface EgresoJpaRepository extends JpaRepository<EgresoEntity, Long> {
 
     @Query("""
         SELECT e FROM EgresoEntity e
-        WHERE EXTRACT(MONTH FROM e.fecha) = :mes
+        WHERE e.userEmail = :email
+        AND EXTRACT(MONTH FROM e.fecha) = :mes
         AND EXTRACT(YEAR FROM e.fecha) = :anio
     """)
     List<EgresoEntity> findByMesAndAnio(
+        @Param("email") String email,
         @Param("mes") int mes,
         @Param("anio") int anio
     );

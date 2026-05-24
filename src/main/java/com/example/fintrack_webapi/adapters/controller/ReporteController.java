@@ -4,13 +4,13 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.fintrack_webapi.application.dto.events.ReporteMensualEvent;
 import com.example.fintrack_webapi.application.dto.queries.ReporteResponseDTO;
 import com.example.fintrack_webapi.domain.exception.BadRequestException;
-import com.example.fintrack_webapi.infrastructure.messaging.ReporteProducer;
+import com.example.fintrack_webapi.domain.port.input.ReporteUseCasePort;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,10 +31,12 @@ import jakarta.validation.constraints.Min;
 )
 public class ReporteController {
 
-    private final ReporteProducer reporteProducer;
+    private final ReporteUseCasePort reporteUseCase;
 
-    public ReporteController(ReporteProducer reporteProducer) {
-        this.reporteProducer = reporteProducer;
+    public ReporteController(
+            ReporteUseCasePort reporteUseCase
+    ) {
+        this.reporteUseCase = reporteUseCase;
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
@@ -44,7 +46,7 @@ public class ReporteController {
         responses = {
             @ApiResponse(
                 responseCode = "202",
-                description = "Reporte enviado correctamente para procesamiento",
+                description = "Reporte enviado correctamente",
                 content = @Content
             ),
             @ApiResponse(
@@ -54,7 +56,9 @@ public class ReporteController {
             )
         }
     )
-    public ResponseEntity<ReporteResponseDTO> generarReporteMensual(
+    public ResponseEntity<ReporteResponseDTO>
+    generarReporteMensual(
+
             @RequestParam
             @Min(1)
             @Max(12)
@@ -62,20 +66,26 @@ public class ReporteController {
     ) {
 
         if (mes < 1 || mes > 12) {
+
             throw new BadRequestException(
                     "El mes debe estar entre 1 y 12"
             );
         }
 
-        String requestId = UUID.randomUUID().toString();
+        String requestId =
+                UUID.randomUUID().toString();
 
-        ReporteMensualEvent event =
-                new ReporteMensualEvent(
-                        mes,
-                        requestId
-                );
+        String emailUsuario =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getName();
 
-        reporteProducer.enviarReporteMensual(event);
+        reporteUseCase.generarReporteMensual(
+                mes,
+                requestId,
+                emailUsuario
+        );
 
         ReporteResponseDTO response =
                 new ReporteResponseDTO(
@@ -83,6 +93,8 @@ public class ReporteController {
                         requestId
                 );
 
-        return ResponseEntity.accepted().body(response);
+        return ResponseEntity
+                .accepted()
+                .body(response);
     }
 }

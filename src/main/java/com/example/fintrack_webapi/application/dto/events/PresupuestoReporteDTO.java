@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,8 +13,7 @@ public class PresupuestoReporteDTO {
 
     private String fecha;
 
-    private double montoTotal;
+    private String categoria;
 
-    // codigoCategoria -> monto
-    private Map<Integer, Double> montosPorCategoria;
+    private double monto;
 }

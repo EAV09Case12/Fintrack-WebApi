@@ -17,37 +17,25 @@ public class ReporteProducer {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public ReporteProducer(RabbitTemplate rabbitTemplate) {
+    public ReporteProducer(
+            RabbitTemplate rabbitTemplate
+    ) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void enviarReporteMensual(ReporteMensualEvent event) {
+    public void enviarReporteMensual(
+            ReporteMensualEvent event
+    ) {
 
-        try {
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.REPORT_EXCHANGE,
+                RabbitMQConfig.REPORT_ROUTING_KEY,
+                event
+        );
 
-            rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.REPORT_EXCHANGE,
-                    RabbitMQConfig.REPORT_ROUTING_KEY,
-                    event
-            );
-
-            logger.info(
-                    "Reporte mensual enviado a RabbitMQ. requestId={}",
-                    event.getRequestId()
-            );
-
-        } catch (Exception e) {
-
-            logger.error(
-                    "Error enviando reporte mensual a RabbitMQ. requestId={}",
-                    event.getRequestId(),
-                    e
-            );
-
-            throw new RuntimeException(
-                    "Error enviando reporte mensual a RabbitMQ",
-                    e
-            );
-        }
+        logger.info(
+                "Reporte enviado a RabbitMQ. requestId={}",
+                event.getRequestId()
+        );
     }
 }

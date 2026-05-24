@@ -15,20 +15,30 @@ public class TransaccionMapper {
     // DOMAIN → ENTITY
     // =========================
 
-    public static IngresoEntity toEntityIngreso(Ingreso ingreso) {
+    public static IngresoEntity toEntityIngreso(
+            Ingreso ingreso,
+            String userEmail
+    ) {
 
         IngresoEntity entity = new IngresoEntity();
+
         entity.setMonto(ingreso.getMonto());
         entity.setFecha(ingreso.getFecha());
+        entity.setUserEmail(userEmail);
 
         return entity;
     }
 
-    public static EgresoEntity toEntityEgreso(Egreso egreso) {
+    public static EgresoEntity toEntityEgreso(
+            Egreso egreso,
+            String userEmail
+    ) {
 
         EgresoEntity entity = new EgresoEntity();
+
         entity.setMonto(egreso.getMonto());
         entity.setFecha(egreso.getFecha());
+        entity.setUserEmail(userEmail);
 
         entity.setIdcat(egreso.getCategoria().getCodigo());
         entity.setDescripcion(egreso.getDescripcion());

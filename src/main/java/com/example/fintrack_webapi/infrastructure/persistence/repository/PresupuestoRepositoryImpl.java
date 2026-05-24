@@ -1,31 +1,43 @@
 package com.example.fintrack_webapi.infrastructure.persistence.repository;
 
-import org.springframework.stereotype.Repository;
-
 import com.example.fintrack_webapi.domain.model.PresupuestoMensual;
 import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
+
+import com.example.fintrack_webapi.infrastructure.dao.PresupuestoJpaRepository;
+
 import com.example.fintrack_webapi.infrastructure.persistence.entity.PresupuestoEntity;
 import com.example.fintrack_webapi.infrastructure.persistence.mapper.PresupuestoMapper;
-import com.example.fintrack_webapi.infrastructure.dao.PresupuestoJpaRepository;
+
+import com.example.fintrack_webapi.infrastructure.security.SecurityUtils;
+
+import org.springframework.stereotype.Repository;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 @Repository
-public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort {
+public class PresupuestoRepositoryImpl
+        implements PresupuestoRepositoryPort {
 
     private final PresupuestoJpaRepository jpaRepository;
 
-    public PresupuestoRepositoryImpl(PresupuestoJpaRepository jpaRepository) {
+    public PresupuestoRepositoryImpl(
+            PresupuestoJpaRepository jpaRepository
+    ) {
         this.jpaRepository = jpaRepository;
     }
 
     @Override
-    public PresupuestoMensual guardar(PresupuestoMensual presupuesto) {
+    public PresupuestoMensual guardar(
+            PresupuestoMensual presupuesto
+    ) {
 
         List<PresupuestoEntity> entities =
-                PresupuestoMapper.toEntities(presupuesto);
+                PresupuestoMapper.toEntities(
+                        presupuesto,
+                        SecurityUtils.obtenerUsuarioAutenticado()
+                );
 
         List<PresupuestoEntity> saved =
                 jpaRepository.saveAll(entities);
@@ -34,9 +46,13 @@ public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort {
     }
 
     @Override
-    public PresupuestoMensual obtenerPorFecha(Date fecha) {
+    public PresupuestoMensual obtenerPorFecha(
+            Date fecha
+    ) {
 
-        Calendar inicio = Calendar.getInstance();
+        Calendar inicio =
+                Calendar.getInstance();
+
         inicio.setTime(fecha);
 
         inicio.set(Calendar.DAY_OF_MONTH, 1);
@@ -45,11 +61,15 @@ public class PresupuestoRepositoryImpl implements PresupuestoRepositoryPort {
         inicio.set(Calendar.SECOND, 0);
         inicio.set(Calendar.MILLISECOND, 0);
 
-        Calendar fin = Calendar.getInstance();
+        Calendar fin =
+                Calendar.getInstance();
+
         fin.setTime(inicio.getTime());
 
-        fin.set(Calendar.DAY_OF_MONTH,
-                fin.getActualMaximum(Calendar.DAY_OF_MONTH));
+        fin.set(
+                Calendar.DAY_OF_MONTH,
+                fin.getActualMaximum(Calendar.DAY_OF_MONTH)
+        );
 
         fin.set(Calendar.HOUR_OF_DAY, 23);
         fin.set(Calendar.MINUTE, 59);

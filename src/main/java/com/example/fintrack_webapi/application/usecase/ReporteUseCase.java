@@ -64,138 +64,151 @@ public class ReporteUseCase
             String emailUsuario
     ) {
 
-        log.info(
-                "Generando reporte mensual. mes={}, requestId={}",
-                mes,
-                requestId
-        );
+        try {
 
-        int anioActual =
-                Calendar.getInstance()
-                        .get(Calendar.YEAR);
+            log.info(
+                    "Generando reporte mensual. mes={}, requestId={}, usuario={}",
+                    mes,
+                    requestId,
+                    emailUsuario
+            );
 
-        List<Transaccion> movimientos =
-                transaccionRepository.obtenerHistorial();
+            int anioActual =
+                    Calendar.getInstance()
+                            .get(Calendar.YEAR);
 
-        movimientos = movimientos.stream()
-                .filter(t -> {
-
-                    Calendar cal =
-                            Calendar.getInstance();
-
-                    cal.setTime(t.getFecha());
-
-                    int mesTransaccion =
-                            cal.get(Calendar.MONTH) + 1;
-
-                    int anioTransaccion =
-                            cal.get(Calendar.YEAR);
-
-                    return mesTransaccion == mes
-                            && anioTransaccion == anioActual;
-                })
-                .toList();
-
-        List<MovimientoReporteDTO> egresos =
-                movimientos.stream()
-                        .filter(t -> t instanceof Egreso)
-                        .map(t -> {
-
-                            Egreso e = (Egreso) t;
-
-                            return MovimientoReporteDTO
-                                    .builder()
-                                    .id(null)
-                                    .monto(e.getMonto())
-                                    .fecha(formatearFecha(e.getFecha()))
-                                    .categoria(
-                                            e.getCategoria().name()
-                                    )
-                                    .descripcion(
-                                            e.getDescripcion()
-                                    )
-                                    .emailUsuario(
-                                            emailUsuario
-                                    )
-                                    .build();
-                        })
-                        .collect(Collectors.toList());
-
-        Calendar fechaPresupuesto =
-                Calendar.getInstance();
-
-        fechaPresupuesto.set(
-                Calendar.YEAR,
-                anioActual
-        );
-
-        fechaPresupuesto.set(
-                Calendar.MONTH,
-                mes - 1
-        );
-
-        fechaPresupuesto.set(
-                Calendar.DAY_OF_MONTH,
-                1
-        );
-
-        Date fechaBusqueda =
-                fechaPresupuesto.getTime();
-
-        PresupuestoMensual presupuesto =
-                presupuestoRepository.obtenerPorFecha(
-                        fechaBusqueda
+            List<Transaccion> movimientos =
+                transaccionRepository.obtenerHistorial(
+                        emailUsuario
                 );
 
-        List<PresupuestoReporteDTO> presupuestos =
-                presupuesto
-                        .obtenerDistribucion()
-                        .entrySet()
-                        .stream()
-                        .map(entry ->
+            movimientos = movimientos.stream()
+                    .filter(t -> {
 
-                                PresupuestoReporteDTO
+                        Calendar cal =
+                                Calendar.getInstance();
+
+                        cal.setTime(t.getFecha());
+
+                        int mesTransaccion =
+                                cal.get(Calendar.MONTH) + 1;
+
+                        int anioTransaccion =
+                                cal.get(Calendar.YEAR);
+
+                        return mesTransaccion == mes
+                                && anioTransaccion == anioActual;
+                    })
+                    .toList();
+
+            List<MovimientoReporteDTO> egresos =
+                    movimientos.stream()
+                            .filter(t -> t instanceof Egreso)
+                            .map(t -> {
+
+                                Egreso e = (Egreso) t;
+
+                                return MovimientoReporteDTO
                                         .builder()
-                                        .fecha(
-                                                formatearFecha(
-                                                        presupuesto.getFecha()
-                                                )
-                                        )
+                                        .id(null)
+                                        .monto(e.getMonto())
+                                        .fecha(formatearFecha(e.getFecha()))
                                         .categoria(
-                                                entry.getKey().name()
+                                                e.getCategoria().name()
                                         )
-                                        .monto(
-                                                entry.getValue()
+                                        .descripcion(
+                                                e.getDescripcion()
                                         )
-                                        .build()
+                                        .emailUsuario(
+                                                emailUsuario
+                                        )
+                                        .build();
+                            })
+                            .collect(Collectors.toList());
 
-                        )
-                        .toList();
+            Calendar fechaPresupuesto =
+                    Calendar.getInstance();
 
-        ReporteMensualEvent event =
-                ReporteMensualEvent
-                        .builder()
-                        .requestId(requestId)
-                        .emailUsuario(emailUsuario)
-                        .mes(mes)
-                        .anio(anioActual)
-                        .egresos(egresos)
-                        .presupuestos(presupuestos)
-                        .build();
+            fechaPresupuesto.set(
+                    Calendar.YEAR,
+                    anioActual
+            );
 
-        log.info(
-                "EVENTO ENVIADO A RABBITMQ: {}",
-                event
-        );
+            fechaPresupuesto.set(
+                    Calendar.MONTH,
+                    mes - 1
+            );
 
-        reporteProducer.enviarReporteMensual(
-                event
-        );
+            fechaPresupuesto.set(
+                    Calendar.DAY_OF_MONTH,
+                    1
+            );
 
-        log.info(
-                "Reporte enviado correctamente. requestId={}",
-                requestId
-        );
+            Date fechaBusqueda =
+                    fechaPresupuesto.getTime();
+
+            PresupuestoMensual presupuesto =
+                    presupuestoRepository.obtenerPorFecha(
+                            fechaBusqueda
+                    );
+
+            List<PresupuestoReporteDTO> presupuestos =
+                    presupuesto
+                            .obtenerDistribucion()
+                            .entrySet()
+                            .stream()
+                            .map(entry ->
+
+                                    PresupuestoReporteDTO
+                                            .builder()
+                                            .fecha(
+                                                    formatearFecha(
+                                                            presupuesto.getFecha()
+                                                    )
+                                            )
+                                            .categoria(
+                                                    entry.getKey().name()
+                                            )
+                                            .monto(
+                                                    entry.getValue()
+                                            )
+                                            .build()
+
+                            )
+                            .toList();
+
+            ReporteMensualEvent event =
+                    ReporteMensualEvent
+                            .builder()
+                            .requestId(requestId)
+                            .emailUsuario(emailUsuario)
+                            .mes(mes)
+                            .anio(anioActual)
+                            .egresos(egresos)
+                            .presupuestos(presupuestos)
+                            .build();
+
+            log.info(
+                    "EVENTO ENVIADO A RABBITMQ: {}",
+                    event
+            );
+
+            reporteProducer.enviarReporteMensual(
+                    event
+            );
+
+            log.info(
+                    "Reporte enviado correctamente. requestId={}",
+                    requestId
+            );
+
+        } catch (Exception e) {
+
+            log.error(
+                    "ERROR GENERANDO REPORTE: ",
+                    e
+            );
+        }
     }
 
     private String formatearFecha(Date fecha) {

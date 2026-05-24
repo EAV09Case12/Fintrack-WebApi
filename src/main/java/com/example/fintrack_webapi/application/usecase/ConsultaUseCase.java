@@ -22,10 +22,12 @@ public class ConsultaUseCase implements ConsultaUseCasePort {
 
     @Override
     public List<MovimientoDTO> obtenerHistorial() {
-        return transaccionRepo.obtenerHistorial()
-            .stream()
-            .map(this::mapToDTO)
-            .collect(Collectors.toList());
+
+        return transaccionRepo
+                .obtenerHistorial()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override

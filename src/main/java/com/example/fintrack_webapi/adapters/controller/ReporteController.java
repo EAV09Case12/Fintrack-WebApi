@@ -2,15 +2,25 @@ package com.example.fintrack_webapi.adapters.controller;
 
 import java.util.UUID;
 
+import org.springframework.core.io.ByteArrayResource;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.validation.annotation.Validated;
+
 import org.springframework.web.bind.annotation.*;
 
 import com.example.fintrack_webapi.application.dto.queries.ReporteResponseDTO;
+
 import com.example.fintrack_webapi.domain.exception.BadRequestException;
+
 import com.example.fintrack_webapi.domain.port.input.ReporteUseCasePort;
+import com.example.fintrack_webapi.domain.port.input.ObtenerReporteUseCasePort;
+
 import com.example.fintrack_webapi.infrastructure.security.SecurityUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,10 +44,19 @@ public class ReporteController {
 
     private final ReporteUseCasePort reporteUseCase;
 
+    private final ObtenerReporteUseCasePort
+            obtenerReporteUseCase;
+
     public ReporteController(
-            ReporteUseCasePort reporteUseCase
+            ReporteUseCasePort reporteUseCase,
+            ObtenerReporteUseCasePort obtenerReporteUseCase
     ) {
-        this.reporteUseCase = reporteUseCase;
+
+        this.reporteUseCase =
+                reporteUseCase;
+
+        this.obtenerReporteUseCase =
+                obtenerReporteUseCase;
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
@@ -77,7 +96,7 @@ public class ReporteController {
                 UUID.randomUUID().toString();
 
         String emailUsuario =
-            SecurityUtils.obtenerUsuarioAutenticado();
+                SecurityUtils.obtenerUsuarioAutenticado();
 
         reporteUseCase.generarReporteMensual(
                 mes,
@@ -94,5 +113,47 @@ public class ReporteController {
         return ResponseEntity
                 .accepted()
                 .body(response);
+    }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @GetMapping("/{requestId}")
+    @Operation(
+        summary = "Descargar reporte PDF",
+        responses = {
+            @ApiResponse(
+                responseCode = "200",
+                description = "PDF encontrado"
+            ),
+            @ApiResponse(
+                responseCode = "404",
+                description = "Reporte no encontrado"
+            )
+        }
+    )
+    public ResponseEntity<ByteArrayResource>
+    descargarReporte(
+            @PathVariable
+            String requestId
+    ) {
+
+        byte[] pdf =
+                obtenerReporteUseCase
+                        .obtenerReporte(
+                                requestId
+                        );
+
+        ByteArrayResource resource =
+                new ByteArrayResource(pdf);
+
+        return ResponseEntity.ok()
+                .contentType(
+                        MediaType.APPLICATION_PDF
+                )
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=reporte-financiero.pdf"
+                )
+                .contentLength(pdf.length)
+                .body(resource);
     }
 }

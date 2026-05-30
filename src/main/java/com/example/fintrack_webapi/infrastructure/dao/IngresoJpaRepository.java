@@ -11,10 +11,12 @@ import com.example.fintrack_webapi.infrastructure.persistence.entity.IngresoEnti
 public interface IngresoJpaRepository extends JpaRepository<IngresoEntity, Long> {
         @Query("""
         SELECT i FROM IngresoEntity i
-        WHERE EXTRACT(MONTH FROM i.fecha) = :mes
+        WHERE i.userEmail = :email
+        AND EXTRACT(MONTH FROM i.fecha) = :mes
         AND EXTRACT(YEAR FROM i.fecha) = :anio
     """)
     List<IngresoEntity> findByMesAndAnio(
+        @Param("email") String email,
         @Param("mes") int mes,
         @Param("anio") int anio
     );

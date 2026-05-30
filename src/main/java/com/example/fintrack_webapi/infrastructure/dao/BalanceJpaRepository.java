@@ -8,7 +8,7 @@ import com.example.fintrack_webapi.infrastructure.persistence.entity.MovimientoE
 
 import java.util.List;
 
-public interface BalanceJpaRepository extends JpaRepository<MovimientoEntity, MovimientoEntity.MovimientoId> {
+public interface BalanceJpaRepository extends JpaRepository<MovimientoEntity, Long> {
 
     @Query(value = """
         SELECT 

@@ -29,6 +29,9 @@ public class EgresoEntity {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "user_email", nullable = false)
+    private String userEmail;
+
     @Column(name = "monto", nullable = false)
     private double monto;
 

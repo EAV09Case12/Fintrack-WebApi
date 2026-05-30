@@ -1,24 +1,16 @@
 package com.example.fintrack_webapi.infrastructure.persistence.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-
-import java.io.Serializable;
-import java.util.Objects;
-
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "movimiento")
-@IdClass(MovimientoEntity.MovimientoId.class)
+@Table(name = "aud_movimiento")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,41 +18,18 @@ import lombok.AllArgsConstructor;
 public class MovimientoEntity {
 
     @Id
-    @Column(name = "tipotransferencia", insertable = false, updatable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "tipotransferencia", nullable = false)
     private String tipoTransferencia;
 
-    @Id
-    @Column(name = "idtransferencia", insertable = false, updatable = false)
-    private Integer idTransferencia;
+    @Column(name = "idtransferencia", nullable = false)
+    private Long idTransferencia;
 
-    public static class MovimientoId implements Serializable {
-        private String tipoTransferencia;
-        private Integer idTransferencia;
+    @Column(name = "user_email", nullable = false)
+    private String userEmail;
 
-        public MovimientoId() {}
-
-        public MovimientoId(String tipoTransferencia, Integer idTransferencia) {
-            this.tipoTransferencia = tipoTransferencia;
-            this.idTransferencia = idTransferencia;
-        }
-
-        public String getTipoTransferencia() { return tipoTransferencia; }
-        public void setTipoTransferencia(String tipoTransferencia) { this.tipoTransferencia = tipoTransferencia; }
-        public Integer getIdTransferencia() { return idTransferencia; }
-        public void setIdTransferencia(Integer idTransferencia) { this.idTransferencia = idTransferencia; }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            MovimientoId that = (MovimientoId) o;
-            return Objects.equals(tipoTransferencia, that.tipoTransferencia) &&
-                   Objects.equals(idTransferencia, that.idTransferencia);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(tipoTransferencia, idTransferencia);
-        }
-    }
+    @Column(name = "realizado_en")
+    private LocalDateTime realizadoEn;
 }

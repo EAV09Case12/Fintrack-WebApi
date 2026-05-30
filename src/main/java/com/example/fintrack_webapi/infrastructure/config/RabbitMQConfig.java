@@ -1,18 +1,17 @@
 package com.example.fintrack_webapi.infrastructure.config;
 
+import java.util.Objects;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
-
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -67,10 +66,10 @@ public class RabbitMQConfig {
     ) {
 
         RabbitTemplate template =
-                new RabbitTemplate(connectionFactory);
+                new RabbitTemplate(Objects.requireNonNull(connectionFactory));
 
         template.setMessageConverter(
-                jsonMessageConverter()
+                Objects.requireNonNull(jsonMessageConverter())
         );
 
         return template;
@@ -82,7 +81,7 @@ public class RabbitMQConfig {
     ) {
 
         RabbitAdmin admin =
-                new RabbitAdmin(connectionFactory);
+                new RabbitAdmin(Objects.requireNonNull(connectionFactory));
 
         admin.setAutoStartup(true);
 

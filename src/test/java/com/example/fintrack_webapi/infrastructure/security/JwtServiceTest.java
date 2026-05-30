@@ -3,6 +3,7 @@ package com.example.fintrack_webapi.infrastructure.security;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,7 +27,7 @@ class JwtServiceTest {
         service = new JwtService();
         secret = Base64.getEncoder().encodeToString(
                 "01234567890123456789012345678901".getBytes(StandardCharsets.UTF_8));
-        ReflectionTestUtils.setField(service, "secret", secret);
+        ReflectionTestUtils.setField(Objects.requireNonNull(service), "secret", secret);
     }
 
     private String token(String sub, Object roles) {

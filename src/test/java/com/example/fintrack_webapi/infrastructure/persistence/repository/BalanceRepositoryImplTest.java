@@ -10,6 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.example.fintrack_webapi.infrastructure.dao.EgresoJpaRepository;
 import com.example.fintrack_webapi.infrastructure.dao.IngresoJpaRepository;
@@ -28,13 +30,21 @@ class BalanceRepositoryImplTest {
     @InjectMocks
     private BalanceRepositoryImpl repo;
 
+    private void autenticarComo(String email) {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(email, null, List.of())
+        );
+    }
+
     // Caso feliz: suma de ingresos del periodo.
     // Comportamiento esperado: total correcto.
     @Test
     void totalIngresos() {
-        when(ingresoRepo.findByMesAndAnio(3, 2026)).thenReturn(List.of(
-                new IngresoEntity(1L, 100.0, new Date()),
-                new IngresoEntity(2L, 250.0, new Date())));
+        autenticarComo("finanzas@test.com");
+
+        when(ingresoRepo.findByMesAndAnio("finanzas@test.com", 3, 2026)).thenReturn(List.of(
+            new IngresoEntity(1L, "finanzas@test.com", 100.0, new Date()),
+            new IngresoEntity(2L, "finanzas@test.com", 250.0, new Date())));
 
         assertEquals(350.0, repo.obtenerTotalIngresos(3, 2026));
     }
@@ -43,9 +53,11 @@ class BalanceRepositoryImplTest {
     // Comportamiento esperado: total correcto.
     @Test
     void totalGastos() {
-        when(egresoRepo.findByMesAndAnio(3, 2026)).thenReturn(List.of(
-                new EgresoEntity(1L, 80.0, new Date(), 1, "a"),
-                new EgresoEntity(2L, 20.0, new Date(), 2, "b")));
+        autenticarComo("finanzas@test.com");
+
+        when(egresoRepo.findByMesAndAnio("finanzas@test.com", 3, 2026)).thenReturn(List.of(
+            new EgresoEntity(1L, "finanzas@test.com", 80.0, new Date(), 1, "a"),
+            new EgresoEntity(2L, "finanzas@test.com", 20.0, new Date(), 2, "b")));
 
         assertEquals(100.0, repo.obtenerTotalGastos(3, 2026));
     }

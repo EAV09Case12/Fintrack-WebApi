@@ -1,5 +1,8 @@
 package com.example.fintrack_webapi.adapters.handler;
 
+import java.lang.reflect.Method;
+import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,15 @@ class GlobalExceptionHandlerTest {
         return request;
     }
 
+    private void sample(String cantidad) {
+        // Helper para construir un MethodParameter no nulo.
+    }
+
+    private MethodParameter typeMismatchParameter() throws NoSuchMethodException {
+        Method method = Objects.requireNonNull(GlobalExceptionHandlerTest.class.getDeclaredMethod("sample", String.class));
+        return new MethodParameter(Objects.requireNonNull(method), 0);
+    }
+
     // Caso feliz: BadRequestException -> respuesta 400 con mensaje de negocio.
     // Comportamiento esperado: status 400 y path correcto.
     @Test
@@ -31,9 +43,10 @@ class GlobalExceptionHandlerTest {
                 req("/api/x"));
 
         assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
-        assertNotNull(res.getBody());
-        assertEquals("dato inválido", res.getBody().getMessage());
-        assertEquals("/api/x", res.getBody().getPath());
+        ErrorResponse body = java.util.Objects.requireNonNull(res.getBody());
+        assertNotNull(body);
+        assertEquals("dato inválido", body.getMessage());
+        assertEquals("/api/x", body.getPath());
     }
 
     // Caso feliz: ResourceNotFoundException -> respuesta 404.
@@ -45,22 +58,24 @@ class GlobalExceptionHandlerTest {
                 req("/api/y"));
 
         assertEquals(HttpStatus.NOT_FOUND, res.getStatusCode());
-        assertNotNull(res.getBody());
-        assertEquals("no existe", res.getBody().getMessage());
+        ErrorResponse body = java.util.Objects.requireNonNull(res.getBody());
+        assertNotNull(body);
+        assertEquals("no existe", body.getMessage());
     }
 
     // Caso de error de tipo: parámetro inválido.
     // Comportamiento esperado: status 400 con nombre del parámetro.
     @Test
-    void typeMismatch400() {
+    void typeMismatch400() throws Exception {
         MethodArgumentTypeMismatchException ex = new MethodArgumentTypeMismatchException(
-                "abc", Integer.class, "cantidad", (MethodParameter) null, new IllegalArgumentException());
+                "abc", Integer.class, "cantidad", Objects.requireNonNull(typeMismatchParameter()), new IllegalArgumentException());
 
         ResponseEntity<ErrorResponse> res = handler.handleTypeMismatch(ex, req("/api/z"));
 
         assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
-        assertNotNull(res.getBody());
-        assertEquals("Parámetro inválido: cantidad", res.getBody().getMessage());
+        ErrorResponse body = java.util.Objects.requireNonNull(res.getBody());
+        assertNotNull(body);
+        assertEquals("Parámetro inválido: cantidad", body.getMessage());
     }
 
     // Caso de error inesperado.
@@ -72,7 +87,8 @@ class GlobalExceptionHandlerTest {
                 req("/api/e"));
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, res.getStatusCode());
-        assertNotNull(res.getBody());
-        assertEquals("Error interno del servidor", res.getBody().getMessage());
+        ErrorResponse body = java.util.Objects.requireNonNull(res.getBody());
+        assertNotNull(body);
+        assertEquals("Error interno del servidor", body.getMessage());
     }
 }

@@ -1,8 +1,9 @@
 package com.example.fintrack_webapi.infrastructure.cache;
 
+import java.util.Objects;
+
 import org.springframework.data.redis.core
         .RedisTemplate;
-
 import org.springframework.stereotype.Repository;
 
 import com.example.fintrack_webapi.domain.port.output
@@ -35,7 +36,7 @@ public class RedisReporteRepository
         return redisTemplate
                 .opsForValue()
                 .get(
-                        generarKey(requestId)
+                        Objects.requireNonNull(generarKey(requestId))
                 );
     }
 

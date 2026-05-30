@@ -2,6 +2,7 @@ package com.example.fintrack_webapi.adapters.controller;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -71,8 +72,8 @@ class TransaccionControllerTest {
 
         // Se envía el JSON real al endpoint para validar el binding y la respuesta.
         mockMvc.perform(post("/api/transacciones/SaveIngreso")
-                        .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+            .content(Objects.requireNonNull(objectMapper.writeValueAsString(dto))))
             .andExpect(status().isCreated());
 
         // Verificamos que el controller haya delegado al caso de uso con el DTO correcto.
@@ -100,8 +101,8 @@ class TransaccionControllerTest {
         String jsonInvalido = "{ \"monto\": 1000, \"fecha\": \"2026-03-29\", \"porcentajes\": {\"1\":20 }";
 
         mockMvc.perform(post("/api/transacciones/SaveIngreso")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonInvalido))
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content(Objects.requireNonNull(jsonInvalido)))
                 .andExpect(status().isInternalServerError());
 
         verifyNoInteractions(transaccionUseCase);
@@ -113,7 +114,7 @@ class TransaccionControllerTest {
     @Test
     void bodyVacio400() throws Exception {
         mockMvc.perform(post("/api/transacciones/SaveIngreso")
-                        .contentType(MediaType.APPLICATION_JSON)
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
                         .content(""))
                 .andExpect(status().isInternalServerError());
 
@@ -134,8 +135,8 @@ class TransaccionControllerTest {
                 .thenThrow(new RuntimeException("Error de negocio simulado"));
 
         mockMvc.perform(post("/api/transacciones/SaveIngreso")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_JSON))
+                .content(Objects.requireNonNull(objectMapper.writeValueAsString(dto))))
                 .andExpect(status().isInternalServerError());
     }
 }

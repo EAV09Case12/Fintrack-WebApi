@@ -1,5 +1,6 @@
 package com.example.fintrack_webapi.infrastructure.persistence.mapper;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +23,7 @@ class TransaccionMapperTest {
     @Test
     void ingresoToEntity() {
         Ingreso in = new Ingreso(120.0, f);
-        IngresoEntity e = TransaccionMapper.toEntityIngreso(in);
+        IngresoEntity e = TransaccionMapper.toEntityIngreso(in, "usuario@test.com");
 
         assertEquals(120.0, e.getMonto());
         assertEquals(f, e.getFecha());
@@ -33,7 +34,7 @@ class TransaccionMapperTest {
     @Test
     void egresoToEntity() {
         Egreso eg = new Egreso(90.0, f, Categoria.SALUD, "medicinas");
-        EgresoEntity e = TransaccionMapper.toEntityEgreso(eg);
+        EgresoEntity e = TransaccionMapper.toEntityEgreso(eg, "usuario@test.com");
 
         assertEquals(90.0, e.getMonto());
         assertEquals(Categoria.SALUD.getCodigo(), e.getIdcat());
@@ -44,8 +45,8 @@ class TransaccionMapperTest {
     // Comportamiento esperado: reconstruye objetos de dominio.
     @Test
     void entityToDomain() {
-        IngresoEntity in = new IngresoEntity(1L, 500.0, f);
-        EgresoEntity eg = new EgresoEntity(2L, 200.0, f, 4, "mercado");
+        IngresoEntity in = new IngresoEntity(1L, "usuario@test.com", 500.0, f);
+        EgresoEntity eg = new EgresoEntity(2L, "usuario@test.com", 200.0, f, 4, "mercado");
 
         assertEquals(500.0, TransaccionMapper.toDomain(in).getMonto());
         assertEquals(Categoria.ALIMENTACION, TransaccionMapper.toDomain(eg).getCategoria());
@@ -55,7 +56,7 @@ class TransaccionMapperTest {
     // Comportamiento esperado: lanza RuntimeException.
     @Test
     void categoriaInvalida() {
-        EgresoEntity eg = new EgresoEntity(2L, 200.0, f, 999, "x");
+        EgresoEntity eg = new EgresoEntity(2L, "usuario@test.com", 200.0, f, 999, "x");
         assertThrows(RuntimeException.class, () -> TransaccionMapper.toDomain(eg));
     }
 
@@ -63,7 +64,7 @@ class TransaccionMapperTest {
     // Comportamiento esperado: UnsupportedOperationException.
     @Test
     void movimientoNoSoportado() {
-        MovimientoEntity m = new MovimientoEntity("ingreso", 1);
+        MovimientoEntity m = new MovimientoEntity(1L, "ingreso", 1L, "usuario@test.com", LocalDateTime.now());
         assertThrows(UnsupportedOperationException.class, () -> TransaccionMapper.toDomain(m));
     }
 }

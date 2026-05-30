@@ -13,6 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.example.fintrack_webapi.domain.model.Categoria;
 import com.example.fintrack_webapi.domain.model.PresupuestoMensual;
@@ -28,6 +30,12 @@ class PresupuestoRepositoryImplTest {
     @InjectMocks
     private PresupuestoRepositoryImpl repo;
 
+    private void autenticarComo(String email) {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(email, null, List.of())
+        );
+    }
+
     // Caso feliz: guardar presupuesto mensual.
     // Comportamiento esperado: guarda filas y retorna dominio.
     @Test
@@ -35,7 +43,9 @@ class PresupuestoRepositoryImplTest {
         Date f = new Date();
         PresupuestoMensual p = new PresupuestoMensual(f, 1000.0, Map.of(Categoria.SERVICIOS, 1000.0));
 
-        when(jpa.saveAll(anyList())).thenReturn(List.of(new PresupuestoEntity(f, new BigDecimal("1000.00"), 1)));
+        autenticarComo("presupuesto@test.com");
+
+        when(jpa.saveAll(anyList())).thenReturn(List.of(new PresupuestoEntity(f, 1, "presupuesto@test.com", new BigDecimal("1000.00"))));
 
         PresupuestoMensual out = repo.guardar(p);
         assertEquals(1000.0, out.getMontoTotal());
@@ -46,7 +56,8 @@ class PresupuestoRepositoryImplTest {
     @Test
     void porFechaOk() {
         Date f = new Date();
-        when(jpa.findByFecha(f)).thenReturn(List.of(new PresupuestoEntity(f, new BigDecimal("500.00"), 4)));
+        autenticarComo("presupuesto@test.com");
+        when(jpa.findByFechaBetween(org.mockito.ArgumentMatchers.any(Date.class), org.mockito.ArgumentMatchers.any(Date.class))).thenReturn(List.of(new PresupuestoEntity(f, 4, "presupuesto@test.com", new BigDecimal("500.00"))));
 
         PresupuestoMensual out = repo.obtenerPorFecha(f);
         assertEquals(500.0, out.getMontoTotal());

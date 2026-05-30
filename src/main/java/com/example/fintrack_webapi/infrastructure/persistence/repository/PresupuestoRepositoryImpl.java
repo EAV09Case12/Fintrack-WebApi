@@ -1,20 +1,18 @@
 package com.example.fintrack_webapi.infrastructure.persistence.repository;
 
-import com.example.fintrack_webapi.domain.model.PresupuestoMensual;
-import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
-
-import com.example.fintrack_webapi.infrastructure.dao.PresupuestoJpaRepository;
-
-import com.example.fintrack_webapi.infrastructure.persistence.entity.PresupuestoEntity;
-import com.example.fintrack_webapi.infrastructure.persistence.mapper.PresupuestoMapper;
-
-import com.example.fintrack_webapi.infrastructure.security.SecurityUtils;
-
-import org.springframework.stereotype.Repository;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+
+import org.springframework.stereotype.Repository;
+
+import com.example.fintrack_webapi.domain.model.PresupuestoMensual;
+import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
+import com.example.fintrack_webapi.infrastructure.dao.PresupuestoJpaRepository;
+import com.example.fintrack_webapi.infrastructure.persistence.entity.PresupuestoEntity;
+import com.example.fintrack_webapi.infrastructure.persistence.mapper.PresupuestoMapper;
+import com.example.fintrack_webapi.infrastructure.security.SecurityUtils;
 
 @Repository
 public class PresupuestoRepositoryImpl
@@ -40,7 +38,7 @@ public class PresupuestoRepositoryImpl
                 );
 
         List<PresupuestoEntity> saved =
-                jpaRepository.saveAll(entities);
+                jpaRepository.saveAll(Objects.requireNonNull(entities));
 
         return PresupuestoMapper.toDomain(saved);
     }

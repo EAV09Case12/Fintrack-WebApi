@@ -3,6 +3,7 @@ package com.example.fintrack_webapi.infrastructure.persistence.repository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
@@ -12,14 +13,11 @@ import com.example.fintrack_webapi.domain.model.Egreso;
 import com.example.fintrack_webapi.domain.model.Ingreso;
 import com.example.fintrack_webapi.domain.model.Transaccion;
 import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
-
 import com.example.fintrack_webapi.infrastructure.dao.EgresoJpaRepository;
 import com.example.fintrack_webapi.infrastructure.dao.IngresoJpaRepository;
 import com.example.fintrack_webapi.infrastructure.dao.MovimientoJpaRepository;
-
 import com.example.fintrack_webapi.infrastructure.persistence.entity.MovimientoEntity;
 import com.example.fintrack_webapi.infrastructure.persistence.mapper.TransaccionMapper;
-
 import com.example.fintrack_webapi.infrastructure.security.SecurityUtils;
 
 @Repository
@@ -50,7 +48,7 @@ public class MovimientoRepositoryImpl
                 SecurityUtils.obtenerUsuarioAutenticado()
         );
 
-        var saved = ingresoRepository.save(entity);
+        var saved = ingresoRepository.save(Objects.requireNonNull(entity));
 
         return TransaccionMapper.toDomain(saved);
     }
@@ -64,7 +62,7 @@ public class MovimientoRepositoryImpl
                 SecurityUtils.obtenerUsuarioAutenticado()
         );
 
-        var saved = egresoRepository.save(entity);
+        var saved = egresoRepository.save(Objects.requireNonNull(entity));
 
         return TransaccionMapper.toDomain(saved);
     }

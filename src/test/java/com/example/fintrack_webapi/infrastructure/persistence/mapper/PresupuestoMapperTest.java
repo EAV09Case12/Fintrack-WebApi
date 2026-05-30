@@ -25,7 +25,7 @@ class PresupuestoMapperTest {
                 1000.0,
                 Map.of(Categoria.SERVICIOS, 333.335, Categoria.SALUD, 666.665));
 
-        List<PresupuestoEntity> rows = PresupuestoMapper.toEntities(p);
+        List<PresupuestoEntity> rows = PresupuestoMapper.toEntities(p, "ana@test.com");
 
         assertEquals(2, rows.size());
         assertEquals(2, rows.get(0).getMonto().scale());
@@ -36,8 +36,8 @@ class PresupuestoMapperTest {
     @Test
     void toDomainOk() {
         Date f = new Date();
-        PresupuestoEntity a = new PresupuestoEntity(f, new BigDecimal("250.00"), 1);
-        PresupuestoEntity b = new PresupuestoEntity(f, new BigDecimal("750.00"), 4);
+        PresupuestoEntity a = new PresupuestoEntity(f, 1, "ana@test.com", new BigDecimal("250.00"));
+        PresupuestoEntity b = new PresupuestoEntity(f, 4, "ana@test.com", new BigDecimal("750.00"));
 
         PresupuestoMensual p = PresupuestoMapper.toDomain(List.of(a, b));
 

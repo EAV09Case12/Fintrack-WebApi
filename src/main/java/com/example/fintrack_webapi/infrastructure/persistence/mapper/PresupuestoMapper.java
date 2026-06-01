@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 
 public class PresupuestoMapper {
 
@@ -46,14 +47,15 @@ public class PresupuestoMapper {
     public static PresupuestoMensual toDomain(List<PresupuestoEntity> entities) {
 
         if (entities == null || entities.isEmpty()) {
-            return null;
+            // Retornar un objeto vacío consistente en lugar de null
+            return new PresupuestoMensual(new Date(), 0.0, new HashMap<>());
         }
 
         Map<Categoria, Double> montos = new HashMap<>();
 
         double montoTotal = 0.0;
 
-        java.util.Date fecha = entities.get(0).getFecha();
+        Date fecha = entities.get(0).getFecha();
 
         for (PresupuestoEntity e : entities) {
 

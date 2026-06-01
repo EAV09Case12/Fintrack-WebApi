@@ -8,6 +8,7 @@ import com.example.fintrack_webapi.domain.port.input.TransaccionUseCasePort;
 import com.example.fintrack_webapi.domain.port.output.TransaccionRepositoryPort;
 import com.example.fintrack_webapi.domain.port.output.PresupuestoRepositoryPort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.example.fintrack_webapi.domain.exception.BadRequestException;
 
 import java.text.SimpleDateFormat;
@@ -30,6 +31,7 @@ public class TransaccionUseCase implements TransaccionUseCasePort {
 
 
     @Override
+    @Transactional
     public PresupuestoResponseDTO registrarIngreso(IngresoDTO dto) {
 
         if (dto.monto() <= 0) {

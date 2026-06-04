@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: fintrack-webapi
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: fintrack-webapi
+
+  template:
+    metadata:
+      labels:
+        app: fintrack-webapi
+
+    spec:
+      containers:
+      - name: fintrack-webapi
+        image: fintrack-webapi:latest
+
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - containerPort: 8080
+
+        env:
+        - name: DB_HOST
+          value: "host.docker.internal"
+
+        - name: DB_USER
+          value: "postgres"
+
+        - name: DB_PASSWORD
+          value: "holyfatigue"
+
+        - name: RABBIT_HOST
+          value: "host.docker.internal"
+
+        - name: REDIS_HOST
+          value: "host.docker.internal"
